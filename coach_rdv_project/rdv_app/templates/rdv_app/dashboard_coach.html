@@ -1,0 +1,30 @@
+{% extends 'rdv_app/base.html' %}
+{% block title %}Tableau de bord - Coach{% endblock %}
+
+{% block content %}
+<h2>Tableau de bord du coach</h2>
+<p>Rendez-vous à venir :</p>
+
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th>Heure</th>
+      <th>Client</th>
+      <th>Objet</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for seance in seances %}
+    <tr>
+      <td>{{ seance.date }}</td>
+      <td>{{ seance.heure_debut }}</td>
+      <td>{{ seance.client.get_full_name }}</td>
+      <td>{{ seance.objet }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="4">Aucun rendez-vous.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

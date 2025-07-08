@@ -1,0 +1,18 @@
+{% extends 'rdv_app/base.html' %}
+{% block title %}Tableau de bord - Client{% endblock %}
+
+{% block content %}
+<h2>Bienvenue {{ user.first_name }}</h2>
+<p>Voici vos rendez-vous à venir :</p>
+<ul class="list-group">
+    {% for seance in seances %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          {{ seance.date }} à {{ seance.heure_debut }} – {{ seance.objet }}
+          <span>Coach : {{ seance.coach.get_full_name }}</span>
+        </li>
+    {% empty %}
+        <li class="list-group-item">Aucun rendez-vous prévu.</li>
+    {% endfor %}
+</ul>
+<a href="{% url 'prendre_rdv' %}" class="btn btn-success mt-3">Prendre un nouveau rendez-vous</a>
+{% endblock %}
