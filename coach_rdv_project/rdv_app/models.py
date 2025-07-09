@@ -29,6 +29,7 @@ class Message(models.Model):
     content = models.TextField()
     file = models.FileField(upload_to='messages/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    lu = models.BooleanField(default=False)
 
     def __str__(self):
         return f"De {self.sender.username} à {self.recipient.username} le {self.created_at.strftime('%d/%m/%Y %H:%M')}"

@@ -16,11 +16,6 @@
     {% if show_update_btn %}
       <a href="{% url 'profile_update' %}" class="btn btn-primary w-100 mt-2">Mettre à jour mon profil</a>
     {% endif %}
-    {% if messages %}
-      {% for message in messages %}
-        <div class="alert alert-success mt-3">{{ message }}</div>
-      {% endfor %}
-    {% endif %}
   </div>
 </div>
 {% endblock %} 

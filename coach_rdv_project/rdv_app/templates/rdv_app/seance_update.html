@@ -3,20 +3,28 @@
 {% block title %}Modifier le rendez-vous{% endblock %}
 
 {% block content %}
-<h2>Modifier mon rendez-vous</h2>
+<h2>Modifier le rendez-vous</h2>
 <form method="post">
     {% csrf_token %}
+    <div class="row">
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label for="date">Nouvelle date :</label>
+                <input type="date" name="date" id="date" class="form-control" value="{{ seance.date|date:'Y-m-d' }}" required>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label for="heure_debut">Nouvelle heure de début :</label>
+                <input type="time" name="heure_debut" id="heure_debut" class="form-control" value="{{ seance.heure_debut|time:'H:i' }}" required>
+            </div>
+        </div>
+    </div>
     <div class="mb-3">
-        <label for="disponibilite">Choisissez un nouveau créneau :</label>
-        <select name="disponibilite" id="disponibilite" class="form-select" required>
-            {% for dispo in disponibilites %}
-                <option value="{{ dispo.id }}" {% if dispo.date == seance.date and dispo.heure_debut == seance.heure_debut and dispo.heure_fin == seance.heure_fin %}selected{% endif %}>
-                    {{ dispo.date|date:'d/m/Y' }} de {{ dispo.heure_debut|time:'H:i' }} à {{ dispo.heure_fin|time:'H:i' }}
-                    {% if dispo.id == 0 %}(créneau actuel){% endif %}
-                </option>
-            {% endfor %}
-        </select>
+        <label for="objet">Objet du rendez-vous :</label>
+        <input type="text" name="objet" id="objet" class="form-control" value="{{ seance.objet }}" required>
     </div>
     <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
+    <a href="{% url 'dashboard' %}" class="btn btn-secondary">Annuler</a>
 </form>
 {% endblock %} 

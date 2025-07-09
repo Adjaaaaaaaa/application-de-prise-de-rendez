@@ -10,6 +10,7 @@ urlpatterns = [
     path('login/', auth_views.LoginView.as_view(template_name='rdv_app/login.html'), name='login'),
      path('logout/', LogoutView.as_view(next_page='accueil'), name='logout'),
     path('signup/', views.signup_view, name='signup'),
+    path('choix-auth/', views.choix_auth_view, name='choix_auth'),
 
     # Dashboards
     path('dashboard/', views.dashboard, name='dashboard'),

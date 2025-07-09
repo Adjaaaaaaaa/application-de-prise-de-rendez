@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8" />
-    <title>{% block title %}CoachRDV{% endblock %}</title>
+    <title>{% block title %}Boost Carrière{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     {% load static %}
     <link rel="stylesheet" href="{% static 'rdv_app/styles.css' %}">
@@ -10,7 +10,7 @@
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark {% if is_coach %}bg-success{% else %}bg-primary{% endif %}">
   <div class="container">
-    <a class="navbar-brand" href="{% url 'accueil' %}">CoachRDV</a>
+    <a class="navbar-brand" href="{% url 'accueil' %}">Boost Carrière</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -20,7 +20,16 @@
           <li class="nav-item"><a class="nav-link" href="{% url 'dashboard_coach' %}">Dashboard</a></li>
           <li class="nav-item"><a class="nav-link" href="{% url 'ateliers_admin' %}">Ateliers</a></li>
           <li class="nav-item"><a class="nav-link" href="{% url 'disponibilites_coach' %}">Agenda</a></li>
-          <li class="nav-item"><a class="nav-link" href="{% url 'messages_coach' %}">Messages</a></li>
+          <li class="nav-item">
+            <a class="nav-link position-relative" href="{% url 'messages_coach' %}">
+              Messages
+              {% if unread_messages > 0 %}
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                  {{ unread_messages }}
+                </span>
+              {% endif %}
+            </a>
+          </li>
           <li class="nav-item">
             <a href="#" class="nav-link" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Déconnexion</a>
             <form id="logout-form" action="{% url 'logout' %}" method="post" style="display:none;">
@@ -28,10 +37,18 @@
             </form>
           </li>
         {% elif user.is_authenticated %}
-          <li class="nav-item"><a class="nav-link" href="{% url 'accueil' %}">Accueil</a></li>
           <li class="nav-item"><a class="nav-link" href="{% url 'prise_rdv' %}">Prendre rendez-vous</a></li>
           <li class="nav-item"><a class="nav-link" href="{% url 'mes_ateliers' %}">Mes ateliers</a></li>
-          <li class="nav-item"><a class="nav-link" href="{% url 'messages' %}">Mes messages</a></li>
+          <li class="nav-item">
+            <a class="nav-link position-relative" href="{% url 'messages' %}">
+              Mes messages
+              {% if unread_messages > 0 %}
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                  {{ unread_messages }}
+                </span>
+              {% endif %}
+            </a>
+          </li>
           <li class="nav-item"><a class="nav-link" href="{% url 'profile' %}">Mon profil</a></li>
           <li class="nav-item">
             <a href="#" class="nav-link" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Déconnexion</a>
@@ -53,11 +70,7 @@
   </div>
 </nav>
 
-{% if not is_coach %}
-<div class="inspiration">
-    "Chaque jour est une nouvelle opportunité de grandir et d'avancer vers vos objectifs."
-</div>
-{% endif %}
+
 
 <main class="container mt-4">
   {% block content %}{% endblock %}
