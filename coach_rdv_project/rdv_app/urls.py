@@ -16,4 +16,12 @@ urlpatterns = [
 
     # Prise de RDV
     path('prendre-rdv/', views.prendre_rdv, name='prise_rdv'),
+
+    path('about/', views.about_view, name='about'),
+
+    path('services/', views.services_view, name='services'),
+
+    path('tarifs/', views.pricing_view, name='pricing'),
+
+    path('contact/', views.contact_view, name='contact'),
 ]

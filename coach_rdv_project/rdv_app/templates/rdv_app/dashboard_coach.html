@@ -3,8 +3,65 @@
 
 {% block content %}
 <h2>Tableau de bord du coach</h2>
-<p>Rendez-vous à venir :</p>
 
+<div class="row mb-4">
+  <div class="col-md-3">
+    <div class="card text-center shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">Clients suivis</h5>
+        <p class="display-6">{{ nb_clients }}</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">Séances totales</h5>
+        <p class="display-6">{{ nb_seances }}</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">Gains totaux</h5>
+        <p class="display-6">{{ gain_total }} €</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">Séances aujourd'hui</h5>
+        <p class="display-6">{{ programme_jour|length }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h4>Programme du jour</h4>
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th>Heure</th>
+      <th>Client</th>
+      <th>Objet</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for seance in programme_jour %}
+    <tr>
+      <td>{{ seance.heure_debut }}</td>
+      <td>{{ seance.client.get_full_name }}</td>
+      <td>{{ seance.objet }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="3">Aucune séance prévue aujourd'hui.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h4 class="mt-4">Rendez-vous à venir</h4>
 <table class="table table-striped">
   <thead>
     <tr>

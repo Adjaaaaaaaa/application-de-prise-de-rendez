@@ -1,0 +1,35 @@
+{% extends 'rdv_app/base.html' %}
+
+{% block title %}Tarifs{% endblock %}
+
+{% block content %}
+<div class="text-center">
+    <h2>Nos Tarifs</h2>
+    <div style="max-width:700px;margin:2rem auto;">
+        <div class="row justify-content-center">
+            <div class="col-md-4 mb-4">
+                <div class="p-4 shadow rounded bg-white h-100">
+                    <h4>Coaching individuel</h4>
+                    <p class="display-6">49€ / séance</p>
+                    <p>Séance personnalisée d'1h avec un coach certifié.</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="p-4 shadow rounded bg-white h-100">
+                    <h4>Atelier collectif</h4>
+                    <p class="display-6">25€ / participant</p>
+                    <p>Atelier de 2h en petit groupe sur une thématique précise.</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="p-4 shadow rounded bg-white h-100">
+                    <h4>Bilan de compétences</h4>
+                    <p class="display-6">120€</p>
+                    <p>Bilan complet avec restitution et plan d'action personnalisé.</p>
+                </div>
+            </div>
+        </div>
+        <p class="mt-4">Pour toute demande spécifique ou devis sur-mesure, <a href="{% url 'contact' %}">contactez-nous</a> !</p>
+    </div>
+</div>
+{% endblock %} 

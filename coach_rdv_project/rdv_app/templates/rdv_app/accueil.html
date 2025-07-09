@@ -1,31 +1,13 @@
 {% extends 'rdv_app/base.html' %}
 
-{% block title %}Bienvenue sur CoachRDV{% endblock %}
+{% block title %}Bienvenue sur Boost Carrière{% endblock %}
 
 {% block content %}
 <div class="container mt-5">
   <div class="jumbotron text-center">
-    <h1 class="display-4">Bienvenue sur CoachRDV</h1>
-    <p class="lead">Prenez rendez-vous facilement avec le coach qui vous convient.</p>
-    <a href="{% url 'signup' %}" class="btn btn-primary btn-lg">Créer un compte</a>
-    <a href="{% url 'login' %}" class="btn btn-outline-primary btn-lg ml-2">Se connecter</a>
-  </div>
-
-  <h2 class="mt-5">Nos coachs disponibles</h2>
-  <div class="row">
-    {% for coach in coachs %}
-    <div class="col-md-4">
-      <div class="card mb-4 shadow-sm">
-        <div class="card-body">
-          <h5 class="card-title">{{ coach.get_full_name }}</h5>
-          <p class="card-text">Email : {{ coach.email }}</p>
-          <a href="{% url 'prendre_rdv' %}?coach={{ coach.id }}" class="btn btn-success">Prendre rendez-vous</a>
-        </div>
-      </div>
-    </div>
-    {% empty %}
-      <p>Aucun coach disponible pour le moment.</p>
-    {% endfor %}
+    <h1 class="display-4">Bienvenue sur Boost Carrière</h1>
+    <p class="lead">Prenez rendez-vous facilement pour booster votre carrière et votre épanouissement.</p>
+    <a href="{% url 'prise_rdv' %}" class="btn btn-success btn-lg ml-2 mt-3">Prendre un rendez-vous</a>
   </div>
 </div>
 {% endblock %}
