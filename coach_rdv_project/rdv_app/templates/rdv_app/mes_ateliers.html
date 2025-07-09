@@ -1,0 +1,24 @@
+{% extends 'rdv_app/base.html' %}
+
+{% block title %}Mes ateliers{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width:800px;">
+  <h2 class="mb-4 text-center">Mes ateliers</h2>
+  {% for atelier in ateliers %}
+    <div class="card mb-4">
+      <div class="card-body">
+        <h4 class="card-title">{{ atelier.titre }}</h4>
+        <p class="card-text">{{ atelier.description }}</p>
+        <p><strong>Date :</strong> {{ atelier.date|date:"d/m/Y" }}</p>
+        <p><strong>Durée :</strong> {{ atelier.duree|default:'Non précisée' }}</p>
+        <p><strong>Lieu :</strong> {{ atelier.lieu|default:'Non précisé' }}</p>
+        <p><strong>Tarif :</strong> {{ atelier.tarif }} €</p>
+        <span class="badge bg-success">Inscrit</span>
+      </div>
+    </div>
+  {% empty %}
+    <div class="alert alert-info text-center">Vous n'êtes inscrit à aucun atelier pour le moment.</div>
+  {% endfor %}
+</div>
+{% endblock %} 

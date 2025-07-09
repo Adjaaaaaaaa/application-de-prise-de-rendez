@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="{% static 'rdv_app/styles.css' %}">
 </head>
 <body>
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+<nav class="navbar navbar-expand-lg navbar-dark {% if is_coach %}bg-success{% else %}bg-primary{% endif %}">
   <div class="container">
     <a class="navbar-brand" href="{% url 'accueil' %}">CoachRDV</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -16,11 +16,23 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav ms-auto">
-        {% if user.is_authenticated %}
+        {% if is_coach %}
+          <li class="nav-item"><a class="nav-link" href="{% url 'dashboard_coach' %}">Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'ateliers_admin' %}">Ateliers</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'disponibilites_coach' %}">Agenda</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'messages_coach' %}">Messages</a></li>
+          <li class="nav-item">
+            <a href="#" class="nav-link" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Déconnexion</a>
+            <form id="logout-form" action="{% url 'logout' %}" method="post" style="display:none;">
+              {% csrf_token %}
+            </form>
+          </li>
+        {% elif user.is_authenticated %}
           <li class="nav-item"><a class="nav-link" href="{% url 'accueil' %}">Accueil</a></li>
-          <li class="nav-item"><a class="nav-link" href="{% url 'profile' %}">Mon profil</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'prise_rdv' %}">Prendre rendez-vous</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'mes_ateliers' %}">Mes ateliers</a></li>
           <li class="nav-item"><a class="nav-link" href="{% url 'messages' %}">Mes messages</a></li>
-          <li class="nav-item"><a class="nav-link" href="{% url 'dashboard' %}">Mes rendez-vous</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'profile' %}">Mon profil</a></li>
           <li class="nav-item">
             <a href="#" class="nav-link" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Déconnexion</a>
             <form id="logout-form" action="{% url 'logout' %}" method="post" style="display:none;">
@@ -31,6 +43,7 @@
           <li class="nav-item"><a class="nav-link" href="{% url 'about' %}">À propos</a></li>
           <li class="nav-item"><a class="nav-link" href="{% url 'services' %}">Services</a></li>
           <li class="nav-item"><a class="nav-link" href="{% url 'pricing' %}">Tarifs</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'ateliers' %}">Ateliers</a></li>
           <li class="nav-item"><a class="nav-link" href="{% url 'contact' %}">Contact</a></li>
           <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Connexion</a></li>
           <li class="nav-item"><a class="nav-link" href="{% url 'signup' %}">Inscription</a></li>

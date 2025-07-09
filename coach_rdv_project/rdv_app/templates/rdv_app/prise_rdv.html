@@ -4,10 +4,23 @@
 
 {% block content %}
 <h2>Prendre un rendez-vous</h2>
-
-<form method="post" class="mt-3">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit" class="btn btn-primary">Réserver</button>
+{% if disponibilites %}
+<form method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label for="disponibilite">Choisissez un créneau disponible :</label>
+        <select name="disponibilite" id="disponibilite" class="form-select" required>
+            <option value="">-- Sélectionner un créneau --</option>
+            {% for dispo in disponibilites %}
+                <option value="{{ dispo.id }}">
+                    {{ dispo.date|date:'d/m/Y' }} de {{ dispo.heure_debut|time:'H:i' }} à {{ dispo.heure_fin|time:'H:i' }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Réserver ce créneau</button>
 </form>
+{% else %}
+<p>Aucun créneau disponible pour le moment. Merci de réessayer plus tard.</p>
+{% endif %}
 {% endblock %}

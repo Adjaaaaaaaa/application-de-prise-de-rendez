@@ -1,0 +1,328 @@
+{% extends 'rdv_app/base.html' %}
+{% block content %}
+<style>
+  .messenger-coach {
+    display: flex;
+    min-height: 65vh;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px #ececec;
+    overflow: hidden;
+    margin-bottom: 0;
+    font-size: 0.95rem;
+    width: 100vw;
+    max-width: 950px;
+    margin: 0 auto;
+    border-radius: 0;
+  }
+  .messenger-coach .clients-list {
+    width: 260px;
+    min-width: 200px;
+    max-width: 320px;
+    background: #f7fafd;
+    border-right: 1px solid #ececec;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    max-height: 100vh;
+  }
+  .messenger-coach .clients-list h4 {
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 1.1em 1em 0.5em 1em;
+    margin: 0;
+    color: #1976d2;
+    letter-spacing: 1px;
+  }
+  .messenger-coach .clients-list ul {
+    list-style: none;
+    margin: 0;
+    padding: 0 0 1em 0;
+    flex: 1;
+    overflow-y: auto;
+  }
+  .messenger-coach .clients-list li {
+    margin: 0;
+    padding: 0;
+  }
+  .messenger-coach .clients-list a {
+    display: flex;
+    align-items: center;
+    gap: 0.7em;
+    padding: 0.7em 1em;
+    color: #222;
+    text-decoration: none;
+    border-left: 3px solid transparent;
+    transition: background 0.2s, border-color 0.2s;
+    border-radius: 0 16px 16px 0;
+    font-size: 1em;
+  }
+  .messenger-coach .clients-list a:hover, .messenger-coach .clients-list a.active {
+    background: #e3f2fd;
+    border-left: 3px solid #1976d2;
+    color: #1976d2;
+  }
+  .messenger-coach .avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: #e3e6ea;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; color: #1976d2;
+    font-size: 1em;
+  }
+  .messenger-coach .discussion {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    position: relative;
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    height: 100vh;
+    max-height: 100vh;
+  }
+  .messenger-coach .discussion-header {
+    background: #fff;
+    border-bottom: 1px solid #ececec;
+    padding: 0.7em 1.2em;
+    font-weight: 600;
+    color: #1976d2;
+    font-size: 1em;
+    display: flex;
+    align-items: center;
+    gap: 0.7em;
+    min-height: 48px;
+  }
+  .messenger-coach .discussion-header .avatar {
+    width: 28px; height: 28px; font-size: 0.95em; box-shadow: none;
+  }
+  .messenger-coach .messages-thread {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.1em 1.1em 0.7em 1.1em;
+    background: #fff;
+    min-height: 180px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3em;
+    scroll-behavior: smooth;
+  }
+  .messenger-coach .msg-row {
+    display: flex;
+    margin-bottom: 0.2em;
+    justify-content: flex-end;
+  }
+  .messenger-coach .msg-row.left { justify-content: flex-start; }
+  .messenger-coach .msg-row.right {
+    justify-content: flex-end;
+    padding-right: 1.5em;
+  }
+  .messenger-coach .msg-row.left {
+    justify-content: flex-start;
+    padding-left: 1.5em;
+  }
+  .messenger-coach .msg-bubble {
+    max-width: 80%;
+    padding: 0.7em 1.3em;
+    border-radius: 16px;
+    background: #f3f7fb;
+    color: #222;
+    font-size: 0.97rem;
+    box-shadow: 0 1px 2px #ececec;
+    word-break: break-word;
+    position: relative;
+    margin-bottom: 0.1em;
+  }
+  .messenger-coach .msg-row.right .msg-bubble {
+    background: #dbeafe;
+    color: #1976d2;
+    align-self: flex-end;
+    /* Coach: bleu pastel */
+  }
+  .messenger-coach .msg-row.left .msg-bubble {
+    background: #b6e2cd;
+    color: #226c3a;
+    align-self: flex-start;
+    /* Client: vert pastel */
+  }
+  .messenger-coach .msg-bubble b {
+    font-size: 0.95em;
+    color: #1976d2;
+    font-weight: 600;
+  }
+  .messenger-coach .msg-meta {
+    font-size: 0.85em;
+    color: #888;
+    margin-top: 0.1em;
+    text-align: right;
+  }
+  .messenger-coach .chat-input-bar {
+    display: flex;
+    align-items: center;
+    padding: 0.7em 0 0.7em 0;
+    border-top: 1px solid #ececec;
+    background: #fff;
+    width: 100%;
+    margin: 0;
+    box-sizing: border-box;
+    min-width: 0;
+    gap: 0.7em;
+    max-width: none;
+  }
+  .messenger-coach .chat-input-bar .file-label {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    margin-right: 0.5em;
+    color: #1976d2;
+    font-size: 1.7em;
+    transition: color 0.18s;
+    padding: 0 0.2em 0 0.1em;
+    height: auto;
+    width: auto;
+  }
+  .messenger-coach .chat-input-bar .file-label svg {
+    width: 28px;
+    height: 28px;
+    margin-bottom: 0;
+    display: block;
+  }
+  .messenger-coach .chat-input-bar .file-label:hover {
+    color: #145db2;
+  }
+  .messenger-coach .chat-input-bar input[type="file"] {
+    display: none;
+  }
+  .messenger-coach .chat-input-bar input[type="text"] {
+    flex: 1 1 0%;
+    border: none !important;
+    background: #f3f7fb;
+    border-radius: 16px;
+    padding: 1.1em 1.5em;
+    font-size: 1.08rem;
+    margin: 0;
+    outline: none;
+    box-shadow: none;
+    transition: background 0.18s;
+    min-width: 0;
+    width: 100%;
+    display: block;
+    box-sizing: border-box;
+    max-width: none;
+  }
+  .messenger-coach .chat-input-bar button.send-btn {
+    background: transparent !important;
+    color: #1976d2 !important;
+    border: none;
+    border-radius: 0;
+    width: auto;
+    height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1em;
+    margin-left: 0.3em;
+    box-shadow: none;
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.18s;
+  }
+  .messenger-coach .chat-input-bar button.send-btn:hover {
+    background: transparent !important;
+    color: #145db2 !important;
+  }
+  .messenger-coach .chat-input-bar button.send-btn svg {
+    display: block;
+    width: 26px;
+    height: 26px;
+    fill: none;
+    stroke: #1976d2 !important;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: stroke 0.18s;
+  }
+  .messenger-coach .chat-input-bar button.send-btn:hover svg {
+    stroke: #145db2 !important;
+  }
+  .messenger-coach .chat-input-bar input[type="text"]:focus {
+    background: #fff;
+  }
+</style>
+<div class="messenger-coach">
+  <div class="clients-list">
+    <h4>Clients</h4>
+    <ul>
+      {% for client in clients %}
+        <li>
+          <a href="?client={{ client.id }}" class="{% if selected_id|default:'' == client.id|stringformat:'s' %}active{% endif %}" style="font-weight:600; text-decoration:underline 0.15em #b6e2cd; text-underline-offset:2px; color:inherit;">
+            {{ client.first_name }} {{ client.last_name }}
+          </a>
+        </li>
+      {% empty %}
+        <li style="padding:1em; color:#888;">Aucun message reçu.</li>
+      {% endfor %}
+    </ul>
+  </div>
+  <div class="discussion">
+    {% if selected_client %}
+      <div class="discussion-header">
+        <span class="avatar">{{ selected_client.first_name|default:selected_client.username|first|upper }}</span>
+        <span>{{ selected_client.first_name }} {{ selected_client.last_name }}</span>
+      </div>
+      <div class="messages-thread" id="messages-thread">
+        {% for msg in messages_list %}
+          <div class="msg-row {% if msg.sender == request.user %}right{% else %}left{% endif %}">
+            <div class="msg-bubble">
+              <b>{% if msg.sender == request.user %}Moi{% else %}{{ msg.sender.first_name }}{% endif %}</b><br>
+              {{ msg.content|linebreaksbr }}
+              {% if msg.file %}<br><a href="{{ msg.file.url }}" target="_blank">📎 Pièce jointe</a>{% endif %}
+              <div class="msg-meta">{{ msg.created_at|date:'d/m/Y H:i' }}</div>
+            </div>
+          </div>
+        {% empty %}
+          <p style="color:#888;">Aucun message pour l'instant.</p>
+        {% endfor %}
+      </div>
+      <form method="post" enctype="multipart/form-data" class="chat-input-bar" id="chat-form" autocomplete="off">
+        {% csrf_token %}
+        <label class="file-label" title="Joindre un fichier">
+          <input type="file" name="file" onchange="this.form.submit();">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M17.707 11.293a1 1 0 00-1.414 0l-6.586 6.586a3 3 0 104.243 4.243l7.071-7.071a5 5 0 10-7.071-7.071l-7.071 7.071a7 7 0 109.899 9.899l6.586-6.586a1 1 0 10-1.414-1.414l-6.586 6.586a5 5 0 11-7.071-7.071l7.071-7.071a3 3 0 114.243 4.243l-7.071 7.071a1 1 0 101.414 1.414l7.071-7.071a1 1 0 000-1.414z" fill="currentColor"/>
+          </svg>
+        </label>
+        <input type="text" name="content" id="chat-input" placeholder="Écrire un message..." autocomplete="off" required />
+        <button type="submit" class="send-btn" title="Envoyer">
+          <svg viewBox="0 0 24 24">
+            <path d="M2 21L23 12L2 3L5 12L2 21Z" fill="none" stroke="#1976d2" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </form>
+      <script>
+        // Envoi du message par Entrée
+        const chatForm = document.getElementById('chat-form');
+        const chatInput = document.getElementById('chat-input');
+        chatForm.addEventListener('submit', function(e) {
+          if (!chatInput.value.trim()) { e.preventDefault(); return false; }
+        });
+        chatInput.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            chatForm.requestSubmit();
+          }
+        });
+        // Scroll auto en bas
+        const thread = document.getElementById('messages-thread');
+        if (thread) { thread.scrollTop = thread.scrollHeight; }
+      </script>
+    {% else %}
+      <div style="padding:2em; color:#888;">Sélectionnez un client pour voir la discussion.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %} 

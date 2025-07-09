@@ -1,87 +1,63 @@
 {% extends 'rdv_app/base.html' %}
-{% block title %}Tableau de bord - Coach{% endblock %}
+
+{% block title %}Dashboard Coach{% endblock %}
 
 {% block content %}
-<h2>Tableau de bord du coach</h2>
-
-<div class="row mb-4">
-  <div class="col-md-3">
-    <div class="card text-center shadow-sm">
-      <div class="card-body">
-        <h5 class="card-title">Clients suivis</h5>
-        <p class="display-6">{{ nb_clients }}</p>
+<div class="container" style="max-width:900px;">
+  <h2 class="mb-4 text-center">Tableau de bord Coach</h2>
+  <div class="row mb-4">
+    <div class="col-md-4">
+      <div class="card text-center shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Ateliers</h5>
+          <p class="display-6">{{ nb_ateliers }}</p>
+          <a href="{% url 'ateliers_admin' %}" class="btn btn-outline-primary w-100">Gérer les ateliers</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card text-center shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Clients</h5>
+          <p class="display-6">{{ nb_clients }}</p>
+          <a href="#" class="btn btn-outline-primary w-100 disabled">Voir les clients</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card text-center shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Messages</h5>
+          <p class="display-6">{{ nb_messages }}</p>
+          <a href="{% url 'messages_coach' %}" class="btn btn-outline-primary w-100">Voir les messages</a>
+        </div>
       </div>
     </div>
   </div>
-  <div class="col-md-3">
-    <div class="card text-center shadow-sm">
-      <div class="card-body">
-        <h5 class="card-title">Séances totales</h5>
-        <p class="display-6">{{ nb_seances }}</p>
+  <h4 class="mb-3">Prochains ateliers</h4>
+  <div class="row row-cols-1 row-cols-md-2 g-4">
+    {% for atelier in ateliers %}
+      <div class="col">
+        <div class="card h-100">
+          {% if atelier.photo %}
+            <img src="{{ atelier.photo.url }}" class="card-img-top" alt="Photo de l'atelier {{ atelier.titre }}" style="object-fit:cover; height:180px;">
+          {% endif %}
+          <div class="card-body">
+            <h5 class="card-title">{{ atelier.titre }}</h5>
+            <p class="card-text small">{{ atelier.description|truncatechars:80 }}</p>
+            <ul class="list-unstyled mb-2">
+              <li><strong>Date :</strong> {{ atelier.date|date:"d/m/Y" }}</li>
+              <li><strong>Durée :</strong> {{ atelier.duree|default:'Non précisée' }}</li>
+              <li><strong>Lieu :</strong> {{ atelier.lieu|default:'Non précisé' }}</li>
+              <li><strong>Tarif :</strong> {{ atelier.tarif }} €</li>
+            </ul>
+            <a href="{% url 'ateliers_admin' %}?edit={{ atelier.id }}" class="btn btn-sm btn-warning">Modifier</a>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
-  <div class="col-md-3">
-    <div class="card text-center shadow-sm">
-      <div class="card-body">
-        <h5 class="card-title">Gains totaux</h5>
-        <p class="display-6">{{ gain_total }} €</p>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-3">
-    <div class="card text-center shadow-sm">
-      <div class="card-body">
-        <h5 class="card-title">Séances aujourd'hui</h5>
-        <p class="display-6">{{ programme_jour|length }}</p>
-      </div>
-    </div>
+    {% empty %}
+      <div class="col-12"><div class="alert alert-info text-center">Aucun atelier à venir.</div></div>
+    {% endfor %}
   </div>
 </div>
-
-<h4>Programme du jour</h4>
-<table class="table table-bordered">
-  <thead>
-    <tr>
-      <th>Heure</th>
-      <th>Client</th>
-      <th>Objet</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for seance in programme_jour %}
-    <tr>
-      <td>{{ seance.heure_debut }}</td>
-      <td>{{ seance.client.get_full_name }}</td>
-      <td>{{ seance.objet }}</td>
-    </tr>
-    {% empty %}
-    <tr><td colspan="3">Aucune séance prévue aujourd'hui.</td></tr>
-    {% endfor %}
-  </tbody>
-</table>
-
-<h4 class="mt-4">Rendez-vous à venir</h4>
-<table class="table table-striped">
-  <thead>
-    <tr>
-      <th>Date</th>
-      <th>Heure</th>
-      <th>Client</th>
-      <th>Objet</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for seance in seances %}
-    <tr>
-      <td>{{ seance.date }}</td>
-      <td>{{ seance.heure_debut }}</td>
-      <td>{{ seance.client.get_full_name }}</td>
-      <td>{{ seance.objet }}</td>
-    </tr>
-    {% empty %}
-    <tr><td colspan="4">Aucun rendez-vous.</td></tr>
-    {% endfor %}
-  </tbody>
-</table>
 {% endblock %}

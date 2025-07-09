@@ -32,3 +32,30 @@ class Message(models.Model):
 
     def __str__(self):
         return f"De {self.sender.username} à {self.recipient.username} le {self.created_at.strftime('%d/%m/%Y %H:%M')}"
+
+class Atelier(models.Model):
+    titre = models.CharField(max_length=200)
+    description = models.TextField()
+    date = models.DateField()
+    duree = models.CharField(max_length=100, blank=True, null=True)
+    lieu = models.CharField(max_length=200, blank=True, null=True)
+    tarif = models.DecimalField(max_digits=6, decimal_places=2)
+    photo = models.ImageField(upload_to='ateliers/', blank=True, null=True)
+    participants = models.ManyToManyField(User, related_name='ateliers_inscrits', blank=True)
+
+    def __str__(self):
+        return f"{self.titre} ({self.date})"
+
+class Disponibilite(models.Model):
+    coach = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='disponibilites')
+    date = models.DateField()
+    heure_debut = models.TimeField()
+    heure_fin = models.TimeField()
+
+    class Meta:
+        verbose_name = 'Disponibilité'
+        verbose_name_plural = 'Disponibilités'
+        ordering = ['date', 'heure_debut']
+
+    def __str__(self):
+        return f"{self.coach} - {self.date} de {self.heure_debut} à {self.heure_fin}"

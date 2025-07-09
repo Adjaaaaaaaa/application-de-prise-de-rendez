@@ -1,5 +1,5 @@
 from django import forms
-from .models import Seance, Profile, Message
+from .models import Seance, Profile, Message, Disponibilite
 from datetime import time, timedelta, datetime
 from django.utils.timezone import now
 from django.contrib.auth.forms import UserCreationForm
@@ -116,3 +116,8 @@ class MessageForm(forms.ModelForm):
         widgets = {
             'content': forms.Textarea(attrs={'rows': 2, 'placeholder': 'Votre message...'}),
         }
+
+class DisponibiliteForm(forms.ModelForm):
+    class Meta:
+        model = Disponibilite
+        fields = ['date', 'heure_debut', 'heure_fin']

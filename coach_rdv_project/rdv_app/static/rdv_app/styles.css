@@ -1,139 +1,201 @@
-/* style.css - Style de base pour l'application Coach RDV */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap');
 
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(120deg, #e0f7fa 0%, #fceabb 100%);
-    color: #333; 
-    margin: 0;
-    padding: 0;
-    min-height: 100vh;
+html, body {
+  font-size: 14px;
+  font-family: 'Montserrat', 'Open Sans', Arial, sans-serif;
+  background: #f7fafd;
+  color: #222;
+  line-height: 1.7;
 }
 
-header, .navbar, nav {
-    background: linear-gradient(90deg, #7ed6df 0%, #b8e994 100%);
-    color: #3d3d3d;
-    box-shadow: 0 2px 8px rgba(126, 214, 223, 0.15);
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Montserrat', 'Open Sans', Arial, sans-serif;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-top: 0;
+  margin-bottom: 0.7em;
+}
+h1 { font-size: 2.1rem; letter-spacing: -1px; }
+h2 { font-size: 1.5rem; }
+h3 { font-size: 1.15rem; }
+h4, h5, h6 { font-size: 1rem; }
+
+p, .paragraph {
+  font-size: 0.98rem;
+  max-width: 70ch;
+  margin-bottom: 1.1em;
+  margin-top: 0;
 }
 
-header h1, .navbar-brand {
-    margin: 0;
-    font-size: 2rem;
-    font-weight: bold;
-    color: #4a69bd;
-    letter-spacing: 2px;
+.container, main.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2.5em 1.2em;
 }
 
-nav a, .navbar-nav .nav-link {
-    color: #4a69bd !important;
-    margin-left: 1.5rem;
-    text-decoration: none;
-    font-weight: 600;
-    border-radius: 20px;
-    padding: 0.3rem 1rem;
-    transition: background 0.2s, color 0.2s;
+.section {
+  margin-bottom: 3.5em;
+  padding: 2.5em 2em;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 2px 16px #ececec;
 }
 
-nav a:hover, .navbar-nav .nav-link:hover {
-    background: #b8e994;
-    color: #222f3e !important;
-    text-decoration: none;
+.cta, .btn, button, input[type="submit"] {
+  background: #6ec1e4;
+  color: #fff;
+  border: none;
+  border-radius: 1.7em;
+  font-size: 1.08rem;
+  font-weight: 600;
+  padding: 0.7em 2.1em;
+  box-shadow: 0 2px 8px #e3e6ea;
+  transition: background 0.18s, box-shadow 0.18s, transform 0.18s;
+  cursor: pointer;
+  outline: none;
+  margin: 0.2em 0.2em 0.2em 0;
+  letter-spacing: 0.5px;
+}
+.cta:hover, .btn:hover, button:hover, input[type="submit"]:hover {
+  background: #4fa3c7;
+  box-shadow: 0 4px 16px #d0e6f7;
+  transform: translateY(-2px) scale(1.03);
 }
 
-main {
-    max-width: 900px;
-    margin: 2rem auto;
-    padding: 2rem 2.5rem;
-    background: rgba(255,255,255,0.95);
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.10);
-    border-radius: 18px;
+input, select, textarea {
+  font-size: 0.97rem;
+  border-radius: 1.2em;
+  border: 1px solid #e3e6ea;
+  padding: 0.6em 1em;
+  background: #f7f7f7;
+  margin-bottom: 1em;
+  transition: border 0.18s, box-shadow 0.18s;
+}
+input:focus, select:focus, textarea:focus {
+  border: 1.5px solid #6ec1e4;
+  box-shadow: 0 2px 8px #e3e6ea;
+  background: #fff;
 }
 
-h2, h3, h4 {
-    color: #38ada9;
-    font-weight: 700;
-    margin-bottom: 1.2rem;
+label {
+  font-size: 0.97rem;
+  font-weight: 600;
+  margin-bottom: 0.3em;
+  color: #444;
 }
 
-form {
-    display: flex;
-    flex-direction: column;
-    max-width: 420px;
-    background: #f7f1e3;
-    padding: 2rem 1.5rem;
-    border-radius: 16px;
-    box-shadow: 0 2px 12px rgba(56, 173, 169, 0.07);
-    margin-bottom: 2rem;
+/* Espacement entre sections principales */
+.section + .section, .container > * + * {
+  margin-top: 2em;
 }
 
-form input[type="text"],
-form input[type="date"],
-form input[type="time"],
-form input[type="password"],
-form input[type="email"],
-form textarea {
-    padding: 0.7rem;
-    margin-bottom: 1.2rem;
-    border: 1px solid #b8e994;
-    border-radius: 8px;
-    font-size: 1rem;
-    background: #fffbe7;
-    transition: border 0.2s;
+/* Centrage des blocs principaux */
+.centered, .center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
-form input:focus, form textarea:focus {
-    border: 1.5px solid #38ada9;
-    outline: none;
+/* Animations légères */
+.fade-in {
+  opacity: 0;
+  animation: fadeIn 0.8s ease-in forwards;
+}
+@keyframes fadeIn {
+  to { opacity: 1; }
+}
+.slide-up {
+  opacity: 0;
+  transform: translateY(30px);
+  animation: slideUp 0.7s cubic-bezier(.23,1.01,.32,1) forwards;
+}
+@keyframes slideUp {
+  to { opacity: 1; transform: none; }
 }
 
-form button {
-    padding: 0.7rem;
-    background: linear-gradient(90deg, #38ada9 0%, #b8e994 100%);
-    color: #fff;
-    font-weight: 700;
-    border: none;
-    border-radius: 24px;
-    cursor: pointer;
-    font-size: 1.1rem;
-    box-shadow: 0 2px 8px rgba(56, 173, 169, 0.10);
-    transition: background 0.3s, transform 0.2s;
+/* Navbar modernisée */
+.navbar {
+  font-family: 'Montserrat', 'Open Sans', Arial, sans-serif;
+  font-size: 1.08rem;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 12px #e3e6ea;
+  border-radius: 0 0 18px 18px;
+  margin-bottom: 2em;
+}
+.navbar .nav-link {
+  border-radius: 1.2em;
+  margin: 0 0.2em;
+  padding: 0.5em 1.3em;
+  transition: background 0.18s, color 0.18s;
+}
+.navbar .nav-link:hover, .navbar .nav-link.active {
+  background: #e3f2fd;
+  color: #1976d2 !important;
 }
 
-form button:hover {
-    background: linear-gradient(90deg, #b8e994 0%, #38ada9 100%);
-    color: #222f3e;
-    transform: translateY(-2px) scale(1.03);
+/* Cartes et dashboard */
+.card {
+  border-radius: 18px;
+  box-shadow: 0 2px 12px #ececec;
+  border: none;
+  background: #fff;
+}
+.card-header {
+  border-radius: 18px 18px 0 0;
+  background: #f7f7f7;
+  font-weight: 700;
+  font-size: 1.1rem;
 }
 
-ul {
-    list-style-type: none;
-    padding-left: 0;
+/* Tableaux */
+table {
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+}
+th, td {
+  padding: 0.8em 1.1em;
+  font-size: 1rem;
 }
 
-ul li {
-    padding: 0.7rem 0;
-    border-bottom: 1px solid #dff9fb;
+/* Messagerie coach : police plus fine et adaptée */
+.messenger-coach, .messenger-coach * {
+  font-size: 0.93rem !important;
+  background: #f7fafd !important;
+}
+.messenger-coach .msg-bubble {
+  font-size: 0.97rem !important;
 }
 
-a {
-    color: #4a69bd;
-    text-decoration: none;
-    transition: color 0.2s;
-}
-
-a:hover {
-    color: #38ada9;
-    text-decoration: underline;
-}
-
-/* Ajout d'un message inspirant en haut de la page */
+/* Inspiration quote */
 .inspiration {
-    background: linear-gradient(90deg, #f8c291 0%, #b8e994 100%);
-    color: #222f3e;
-    text-align: center;
-    padding: 0.7rem 0;
-    font-size: 1.1rem;
-    font-style: italic;
-    border-radius: 0 0 18px 18px;
-    margin-bottom: 1.5rem;
-    box-shadow: 0 2px 8px rgba(248, 194, 145, 0.10);
+  font-size: 1.1rem;
+  color: #888;
+  text-align: center;
+  margin: 2em 0 1.5em 0;
+  font-style: italic;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .container, main.container { padding: 1.2em 0.5em; }
+  .section { padding: 1.2em 0.5em; }
+}
+@media (max-width: 700px) {
+  .container, main.container { max-width: 100vw; }
+  .section { border-radius: 8px; }
+  h1 { font-size: 2rem; }
+  h2 { font-size: 1.3rem; }
+}
+
+/* Formulaires */
+.form-group, .mb-2, .mb-3 {
+  margin-bottom: 1.1em !important;
+}
+
+/* Correction pour la messagerie coach : fond blanc pour les bulles, bleu pâle pour le fil */
+.messenger-coach .messages-thread {
+  background: #f3f7fb !important;
 }
