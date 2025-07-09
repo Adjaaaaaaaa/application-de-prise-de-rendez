@@ -10,6 +10,7 @@ from django.contrib import messages
 from django.db import models
 from django.contrib.admin.views.decorators import staff_member_required
 from django import forms
+from django.utils import timezone
 
 class AtelierForm(forms.ModelForm):
     class Meta:
@@ -68,6 +69,9 @@ def dashboard(request):
 
 @login_required
 def dashboard_coach_view(request):
+    from .models import Seance
+    # Affiche tous les rendez-vous à venir pour le coach (où il est coach)
+    seances = Seance.objects.filter(date__gte=timezone.now().date()).order_by('date', 'heure_debut')
     # Vérification du rôle coach
     if not (request.user.groups.filter(name='coach').exists() or request.user.username.lower() == 'adja'):
         return redirect('dashboard')
@@ -83,6 +87,7 @@ def dashboard_coach_view(request):
         'nb_messages': nb_messages,
         'ateliers': ateliers,
         'is_coach': is_coach,
+        'seances': seances,
     })
 
 @login_required
@@ -95,7 +100,7 @@ def prendre_rdv(request):
         models.Q(date__in=[c[0] for c in creneaux_reserves],
                  heure_debut__in=[c[1] for c in creneaux_reserves],
                  heure_fin__in=[c[2] for c in creneaux_reserves])
-    ).order_by('date', 'heure_debut')
+    ).filter(restreint=False).order_by('date', 'heure_debut')
     if request.method == 'POST':
         dispo_id = request.POST.get('disponibilite')
         if dispo_id:
@@ -170,12 +175,33 @@ def seance_update_view(request, pk):
 
 @login_required
 def seance_delete_view(request, pk):
-    seance = get_object_or_404(Seance, pk=pk, client=request.user)
-    if request.method == 'POST':
-        seance.delete()
-        messages.success(request, 'Votre rendez-vous a bien été annulé.')
-        return redirect('dashboard')
+    seance = get_object_or_404(Seance, pk=pk)
     is_coach = request.user.is_authenticated and (request.user.groups.filter(name='coach').exists() or request.user.username.lower() == 'adja')
+    # Seul le client ou le coach peut annuler
+    if not (request.user == seance.client or is_coach):
+        return redirect('dashboard')
+    if request.method == 'POST':
+        client = seance.client
+        coach = seance.client if not is_coach else request.user
+        # Message interne
+        from .models import Message
+        Message.objects.create(
+            sender=coach,
+            recipient=client,
+            content=f"Votre rendez-vous du {seance.date} à {seance.heure_debut.strftime('%H:%M')} a été annulé par le coach."
+        )
+        # Email
+        from django.core.mail import send_mail
+        send_mail(
+            subject="Annulation de votre rendez-vous CoachRDV",
+            message=f"Bonjour {client.first_name},\n\nVotre rendez-vous du {seance.date} à {seance.heure_debut.strftime('%H:%M')} a été annulé par le coach. N'hésitez pas à reprendre rendez-vous sur la plateforme.\n\nCordialement,\nCoachRDV",
+            from_email=None,
+            recipient_list=[client.email],
+            fail_silently=True,
+        )
+        seance.delete()
+        messages.success(request, 'Le rendez-vous a bien été annulé et le client a été notifié.')
+        return redirect('dashboard')
     return render(request, 'rdv_app/seance_confirm_delete.html', {'seance': seance, 'is_coach': is_coach})
 
 @login_required
@@ -341,6 +367,20 @@ def ateliers_admin_view(request):
 
 @login_required
 def disponibilites_coach_view(request):
+    from .models import Indisponibilite
+    from .forms import IndisponibiliteForm
+    indispos = Indisponibilite.objects.filter(coach=request.user).order_by('-date_debut')
+    indispo_form = IndisponibiliteForm(request.POST or None)
+    if request.method == 'POST' and 'add_indispo' in request.POST:
+        if indispo_form.is_valid():
+            indispo = indispo_form.save(commit=False)
+            indispo.coach = request.user
+            indispo.save()
+            return redirect('disponibilites_coach')
+    if request.method == 'POST' and 'delete_indispo' in request.POST:
+        ind_id = request.POST.get('delete_indispo')
+        Indisponibilite.objects.filter(pk=ind_id, coach=request.user).delete()
+        return redirect('disponibilites_coach')
     if not (request.user.groups.filter(name='coach').exists() or request.user.username.lower() == 'adja'):
         return redirect('dashboard')
     from .models import Disponibilite
@@ -360,9 +400,14 @@ def disponibilites_coach_view(request):
     if delete_id:
         Disponibilite.objects.filter(pk=delete_id, coach=request.user).delete()
         return redirect('disponibilites_coach')
+    from .models import Seance
+    seances = Seance.objects.filter(date__gte=timezone.now().date()).order_by('date', 'heure_debut')
     is_coach = True
     return render(request, 'rdv_app/disponibilites_coach.html', {
         'disponibilites': disponibilites,
         'form': form,
-        'is_coach': is_coach,
+        'indispo_form': indispo_form,
+        'indispos': indispos,
+        'seances': seances,
+        'is_coach': True,
     })

@@ -51,6 +51,7 @@ class Disponibilite(models.Model):
     date = models.DateField()
     heure_debut = models.TimeField()
     heure_fin = models.TimeField()
+    restreint = models.BooleanField(default=False, help_text="Ce créneau est-il restreint (non réservable par les clients) ?")
 
     class Meta:
         verbose_name = 'Disponibilité'
@@ -59,3 +60,22 @@ class Disponibilite(models.Model):
 
     def __str__(self):
         return f"{self.coach} - {self.date} de {self.heure_debut} à {self.heure_fin}"
+
+class Indisponibilite(models.Model):
+    coach = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='indisponibilites')
+    TYPE_CHOICES = [
+        ('jour', 'Jour entier'),
+        ('creneau', 'Créneau précis'),
+    ]
+    type = models.CharField(max_length=10, choices=TYPE_CHOICES)
+    date_debut = models.DateField()
+    date_fin = models.DateField(blank=True, null=True)
+    heure_debut = models.TimeField(blank=True, null=True)
+    heure_fin = models.TimeField(blank=True, null=True)
+    motif = models.CharField(max_length=255, blank=True, null=True)
+
+    def __str__(self):
+        if self.type == 'jour':
+            return f"Indispo {self.date_debut} (jour entier)"
+        else:
+            return f"Indispo {self.date_debut} {self.heure_debut}-{self.heure_fin}"

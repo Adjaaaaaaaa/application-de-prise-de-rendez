@@ -1,33 +1,84 @@
 {% extends 'rdv_app/base.html' %}
 {% block content %}
 <h2>Mes disponibilités</h2>
-<form method="post" class="mb-4">
+<h4 class="mt-4">Bloquer une indisponibilité</h4>
+<form method="post" class="mb-4 d-flex flex-wrap align-items-end gap-2">
     {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Ajouter une disponibilité</button>
+    {{ indispo_form.type.label_tag }} {{ indispo_form.type }}
+    {{ indispo_form.date_debut.label_tag }} {{ indispo_form.date_debut }}
+    {{ indispo_form.date_fin.label_tag }} {{ indispo_form.date_fin }}
+    <span id="heure-fields">
+      {{ indispo_form.heure_debut.label_tag }} {{ indispo_form.heure_debut }}
+      {{ indispo_form.heure_fin.label_tag }} {{ indispo_form.heure_fin }}
+    </span>
+    {{ indispo_form.motif.label_tag }} {{ indispo_form.motif }}
+    <button type="submit" name="add_indispo" class="btn btn-warning">Bloquer</button>
 </form>
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Date</th>
-            <th>Début</th>
-            <th>Fin</th>
-            <th></th>
-        </tr>
-    </thead>
+<script>
+function updateHeureFields() {
+  var type = document.getElementById('id_type').value;
+  var heureFields = document.getElementById('heure-fields');
+  if (type === 'jour') {
+    heureFields.style.display = 'none';
+  } else {
+    heureFields.style.display = '';
+  }
+}
+document.getElementById('id_type').addEventListener('change', updateHeureFields);
+window.addEventListener('DOMContentLoaded', updateHeureFields);
+</script>
+
+<h5>Indisponibilités à venir</h5>
+<table class="table table-bordered">
+    <thead><tr><th>Type</th><th>Début</th><th>Fin</th><th>Heure début</th><th>Heure fin</th><th>Motif</th><th></th></tr></thead>
     <tbody>
-        {% for dispo in disponibilites %}
-        <tr>
-            <td>{{ dispo.date }}</td>
-            <td>{{ dispo.heure_debut|time:'H:i' }}</td>
-            <td>{{ dispo.heure_fin|time:'H:i' }}</td>
-            <td>
-                <a href="?delete={{ dispo.id }}" class="btn btn-danger btn-sm" onclick="return confirm('Supprimer cette disponibilité ?');">Supprimer</a>
-            </td>
-        </tr>
-        {% empty %}
-        <tr><td colspan="4">Aucune disponibilité définie.</td></tr>
-        {% endfor %}
+    {% for ind in indispos %}
+      <tr>
+        <td>{{ ind.get_type_display }}</td>
+        <td>{{ ind.date_debut }}</td>
+        <td>{{ ind.date_fin|default:'-' }}</td>
+        <td>{{ ind.heure_debut|default:'-' }}</td>
+        <td>{{ ind.heure_fin|default:'-' }}</td>
+        <td>{{ ind.motif|default:'-' }}</td>
+        <td>
+          <form method="post" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" name="delete_indispo" value="{{ ind.id }}" class="btn btn-danger btn-sm" onclick="return confirm('Supprimer cette indisponibilité ?');">Supprimer</button>
+          </form>
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="7">Aucune indisponibilité définie.</td></tr>
+    {% endfor %}
     </tbody>
+</table>
+
+<h4 class="mt-5 mb-3">Rendez-vous à venir</h4>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th>Heure</th>
+      <th>Client</th>
+      <th>Objet</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for seance in seances %}
+    <tr>
+      <td>{{ seance.date|date:'d/m/Y' }}</td>
+      <td>{{ seance.heure_debut|time:'H:i' }}</td>
+      <td>{{ seance.client.get_full_name|default:seance.client.username }}</td>
+      <td>{{ seance.objet }}</td>
+      <td>
+        <a href="{% url 'seance_update' seance.id %}" class="btn btn-warning btn-sm">Modifier</a>
+        <a href="{% url 'seance_delete' seance.id %}" class="btn btn-danger btn-sm" onclick="return confirm('Annuler ce rendez-vous ?');">Annuler</a>
+      </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="5">Aucun rendez-vous à venir.</td></tr>
+    {% endfor %}
+  </tbody>
 </table>
 {% endblock %} 

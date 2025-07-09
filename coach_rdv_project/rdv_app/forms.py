@@ -1,5 +1,5 @@
 from django import forms
-from .models import Seance, Profile, Message, Disponibilite
+from .models import Seance, Profile, Message, Disponibilite, Indisponibilite
 from datetime import time, timedelta, datetime
 from django.utils.timezone import now
 from django.contrib.auth.forms import UserCreationForm
@@ -120,4 +120,15 @@ class MessageForm(forms.ModelForm):
 class DisponibiliteForm(forms.ModelForm):
     class Meta:
         model = Disponibilite
-        fields = ['date', 'heure_debut', 'heure_fin']
+        fields = ['date', 'heure_debut', 'heure_fin', 'restreint']
+
+class IndisponibiliteForm(forms.ModelForm):
+    class Meta:
+        model = Indisponibilite
+        fields = ['type', 'date_debut', 'date_fin', 'heure_debut', 'heure_fin', 'motif']
+        widgets = {
+            'date_debut': forms.DateInput(attrs={'type': 'date'}),
+            'date_fin': forms.DateInput(attrs={'type': 'date'}),
+            'heure_debut': forms.TimeInput(attrs={'type': 'time'}),
+            'heure_fin': forms.TimeInput(attrs={'type': 'time'}),
+        }

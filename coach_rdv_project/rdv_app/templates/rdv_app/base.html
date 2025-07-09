@@ -53,9 +53,11 @@
   </div>
 </nav>
 
+{% if not is_coach %}
 <div class="inspiration">
     "Chaque jour est une nouvelle opportunité de grandir et d'avancer vers vos objectifs."
 </div>
+{% endif %}
 
 <main class="container mt-4">
   {% block content %}{% endblock %}
