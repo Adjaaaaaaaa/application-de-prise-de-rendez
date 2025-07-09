@@ -1,0 +1,17 @@
+{% extends 'rdv_app/base.html' %}
+
+{% block title %}Modifier le rendez-vous{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-center align-items-center" style="min-height:70vh;">
+  <div class="card shadow p-4" style="max-width: 420px; width:100%;">
+    <h2 class="mb-4 text-center">Modifier le rendez-vous</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-warning w-100 mt-2">Enregistrer les modifications</button>
+    </form>
+    <a href="{% url 'dashboard' %}" class="btn btn-link w-100 mt-3">Retour à mes rendez-vous</a>
+  </div>
+</div>
+{% endblock %} 

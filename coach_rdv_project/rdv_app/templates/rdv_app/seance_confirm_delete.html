@@ -1,0 +1,22 @@
+{% extends 'rdv_app/base.html' %}
+
+{% block title %}Annuler le rendez-vous{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-center align-items-center" style="min-height:70vh;">
+  <div class="card shadow p-4" style="max-width: 420px; width:100%;">
+    <h2 class="mb-4 text-center">Annuler le rendez-vous</h2>
+    <p>Voulez-vous vraiment annuler ce rendez-vous&nbsp;?</p>
+    <ul>
+      <li><strong>Date :</strong> {{ seance.date }}</li>
+      <li><strong>Heure :</strong> {{ seance.heure_debut }}</li>
+      <li><strong>Objet :</strong> {{ seance.objet }}</li>
+    </ul>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger w-100 mt-2">Confirmer l'annulation</button>
+    </form>
+    <a href="{% url 'dashboard' %}" class="btn btn-link w-100 mt-3">Retour à mes rendez-vous</a>
+  </div>
+</div>
+{% endblock %} 

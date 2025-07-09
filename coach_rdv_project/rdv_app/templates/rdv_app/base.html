@@ -16,21 +16,22 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav ms-auto">
-        <li class="nav-item"><a class="nav-link" href="{% url 'about' %}">À propos</a></li>
-        <li class="nav-item"><a class="nav-link" href="{% url 'services' %}">Services</a></li>
-        <li class="nav-item"><a class="nav-link" href="{% url 'pricing' %}">Tarifs</a></li>
-        <li class="nav-item"><a class="nav-link" href="{% url 'contact' %}">Contact</a></li>
         {% if user.is_authenticated %}
+          <li class="nav-item"><a class="nav-link" href="{% url 'accueil' %}">Accueil</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'profile' %}">Mon profil</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'messages' %}">Mes messages</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'dashboard' %}">Mes rendez-vous</a></li>
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a>
-          </li>
-          <li class="nav-item">
-            <form action="{% url 'logout' %}" method="post" class="d-inline">
+            <a href="#" class="nav-link" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Déconnexion</a>
+            <form id="logout-form" action="{% url 'logout' %}" method="post" style="display:none;">
               {% csrf_token %}
-              <button type="submit" class="nav-link btn btn-link text-white p-0">Déconnexion</button>
             </form>
           </li>
         {% else %}
+          <li class="nav-item"><a class="nav-link" href="{% url 'about' %}">À propos</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'services' %}">Services</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'pricing' %}">Tarifs</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'contact' %}">Contact</a></li>
           <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Connexion</a></li>
           <li class="nav-item"><a class="nav-link" href="{% url 'signup' %}">Inscription</a></li>
         {% endif %}

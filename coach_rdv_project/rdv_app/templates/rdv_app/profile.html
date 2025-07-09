@@ -1,0 +1,26 @@
+{% extends 'rdv_app/base.html' %}
+
+{% block title %}Mon profil{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-center align-items-center" style="min-height:70vh;">
+  <div class="card shadow p-4" style="max-width: 480px; width:100%;">
+    <h2 class="mb-4 text-center">Mon profil</h2>
+    <div class="mb-3">
+      <strong>Nom d'utilisateur :</strong> {{ user_obj.username }}<br>
+      <strong>Prénom :</strong> {{ user_obj.first_name|default:'Non renseigné' }}<br>
+      <strong>Nom :</strong> {{ user_obj.last_name|default:'Non renseigné' }}<br>
+      <strong>Email :</strong> {{ user_obj.email|default:'Non renseigné' }}<br>
+      <strong>Téléphone :</strong> {{ profile.telephone|default:'Non renseigné' }}
+    </div>
+    {% if show_update_btn %}
+      <a href="{% url 'profile_update' %}" class="btn btn-primary w-100 mt-2">Mettre à jour mon profil</a>
+    {% endif %}
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-success mt-3">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+  </div>
+</div>
+{% endblock %} 

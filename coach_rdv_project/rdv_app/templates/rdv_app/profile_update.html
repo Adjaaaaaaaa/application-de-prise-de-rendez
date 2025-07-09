@@ -1,0 +1,17 @@
+{% extends 'rdv_app/base.html' %}
+
+{% block title %}Modifier mon profil{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-center align-items-center" style="min-height:70vh;">
+  <div class="card shadow p-4" style="max-width: 480px; width:100%;">
+    <h2 class="mb-4 text-center">Modifier mon profil</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary w-100 mt-2">Enregistrer les modifications</button>
+    </form>
+    <a href="{% url 'profile' %}" class="btn btn-link w-100 mt-3">Retour au profil</a>
+  </div>
+</div>
+{% endblock %} 
