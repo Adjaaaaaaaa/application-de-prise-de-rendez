@@ -110,25 +110,128 @@ def dashboard(request):
 
 @login_required
 def dashboard_coach_view(request):
-    from .models import Seance
-    # Affiche tous les rendez-vous à venir pour le coach (où il est coach)
-    seances = Seance.objects.filter(date__gte=timezone.now().date()).order_by('date', 'heure_debut')
     # Vérification du rôle coach
     if not (request.user.groups.filter(name='coach').exists() or request.user.username.lower() == 'adja'):
         return redirect('dashboard')
+    
     from .models import Atelier, Seance, Message
+    from datetime import datetime, date
+    from calendar import monthrange
+    
+    # Statistiques de base
     nb_ateliers = Atelier.objects.count()
     nb_clients = Seance.objects.values('client').distinct().count()
     nb_messages = Message.objects.filter(recipient=request.user).count()
-    ateliers = Atelier.objects.order_by('-date')[:3]
+    
+    # Calcul des gains par mois
+    current_month = datetime.now().month
+    current_year = datetime.now().year
+    
+    # Gains des rendez-vous du mois en cours
+    # Tarifs selon le type de consultation
+    tarifs_consultation = {
+        'premiere': 49,  # Première consultation
+        'coaching': 120,  # Coaching individuel
+        'motivation': 120,  # Suivi motivationnel
+        'bilan': 120,  # Bilan de compétences
+    }
+    
+    # Rendez-vous du mois en cours
+    seances_mois = Seance.objects.filter(
+        date__year=current_year,
+        date__month=current_month
+    )
+    
+    gains_rdv_mois = 0
+    for seance in seances_mois:
+        # Déterminer le type de consultation basé sur l'objet
+        objet = seance.objet.lower()
+        if 'première' in objet or 'premiere' in objet:
+            gains_rdv_mois += tarifs_consultation['premiere']
+        else:
+            # Pour les autres types, utiliser le tarif standard
+            gains_rdv_mois += tarifs_consultation['coaching']
+    
+    # Gains des ateliers du mois en cours
+    ateliers_mois = Atelier.objects.filter(
+        date__year=current_year,
+        date__month=current_month
+    )
+    
+    gains_ateliers_mois = 0
+    nb_participants_mois = 0
+    for atelier in ateliers_mois:
+        nb_participants = atelier.participants.count()
+        gains_ateliers_mois += atelier.tarif * nb_participants
+        nb_participants_mois += nb_participants
+    
+    # Total des gains du mois
+    gains_total_mois = gains_rdv_mois + gains_ateliers_mois
+    
+    # Statistiques du mois précédent pour comparaison
+    if current_month == 1:
+        prev_month = 12
+        prev_year = current_year - 1
+    else:
+        prev_month = current_month - 1
+        prev_year = current_year
+    
+    seances_mois_prec = Seance.objects.filter(
+        date__year=prev_year,
+        date__month=prev_month
+    )
+    
+    gains_rdv_mois_prec = 0
+    for seance in seances_mois_prec:
+        objet = seance.objet.lower()
+        if 'première' in objet or 'premiere' in objet:
+            gains_rdv_mois_prec += tarifs_consultation['premiere']
+        else:
+            gains_rdv_mois_prec += tarifs_consultation['coaching']
+    
+    ateliers_mois_prec = Atelier.objects.filter(
+        date__year=prev_year,
+        date__month=prev_month
+    )
+    
+    gains_ateliers_mois_prec = 0
+    for atelier in ateliers_mois_prec:
+        nb_participants = atelier.participants.count()
+        gains_ateliers_mois_prec += atelier.tarif * nb_participants
+    
+    gains_total_mois_prec = gains_rdv_mois_prec + gains_ateliers_mois_prec
+    
+    # Évolution en pourcentage
+    if gains_total_mois_prec > 0:
+        evolution_pct = ((gains_total_mois - gains_total_mois_prec) / gains_total_mois_prec) * 100
+    else:
+        evolution_pct = 0
+    
+    # Calcul des moyennes
+    nb_rdv_mois = seances_mois.count()
+    nb_ateliers_mois = ateliers_mois.count()
+    
+    gain_moyen_rdv = 0
+    if nb_rdv_mois > 0:
+        gain_moyen_rdv = gains_rdv_mois / nb_rdv_mois
+    
     is_coach = True
     return render(request, 'rdv_app/dashboard_coach.html', {
         'nb_ateliers': nb_ateliers,
         'nb_clients': nb_clients,
         'nb_messages': nb_messages,
-        'ateliers': ateliers,
+        'gains_rdv_mois': gains_rdv_mois,
+        'gains_ateliers_mois': gains_ateliers_mois,
+        'gains_total_mois': gains_total_mois,
+        'gains_total_mois_prec': gains_total_mois_prec,
+        'evolution_pct': evolution_pct,
+        'nb_participants_mois': nb_participants_mois,
+        'nb_rdv_mois': nb_rdv_mois,
+        'nb_ateliers_mois': nb_ateliers_mois,
+        'gain_moyen_rdv': gain_moyen_rdv,
+        'current_month': current_month,
+        'current_year': current_year,
         'is_coach': is_coach,
-        'seances': seances,
     })
 
 def prendre_rdv(request):
@@ -681,4 +784,57 @@ def disponibilites_coach_view(request):
         'indispos': indispos,
         'seances': seances,
         'is_coach': True,
+    })
+
+@login_required
+def clients_coach_view(request):
+    """Vue pour afficher la liste des clients du coach"""
+    # Vérification du rôle coach
+    if not (request.user.groups.filter(name='coach').exists() or request.user.username.lower() == 'adja'):
+        return redirect('dashboard')
+    
+    from django.contrib.auth.models import User
+    from .models import Seance, Profile
+    
+    # Récupérer tous les clients qui ont pris au moins un rendez-vous
+    clients_ids = Seance.objects.values_list('client', flat=True).distinct()
+    clients = User.objects.filter(id__in=clients_ids).order_by('first_name', 'last_name', 'username')
+    
+    # Statistiques pour chaque client
+    clients_data = []
+    total_rdv = 0
+    clients_actifs = 0
+    
+    for client in clients:
+        # Nombre de rendez-vous
+        nb_rdv = Seance.objects.filter(client=client).count()
+        total_rdv += nb_rdv
+        
+        # Dernier rendez-vous
+        dernier_rdv = Seance.objects.filter(client=client).order_by('-date', '-heure_debut').first()
+        # Prochain rendez-vous
+        prochain_rdv = Seance.objects.filter(client=client, date__gte=timezone.now().date()).order_by('date', 'heure_debut').first()
+        
+        # Compter les clients actifs
+        if prochain_rdv:
+            clients_actifs += 1
+        
+        # Profil du client
+        profile, created = Profile.objects.get_or_create(user=client)
+        
+        clients_data.append({
+            'client': client,
+            'profile': profile,
+            'nb_rdv': nb_rdv,
+            'dernier_rdv': dernier_rdv,
+            'prochain_rdv': prochain_rdv,
+        })
+    
+    is_coach = True
+    return render(request, 'rdv_app/clients_coach.html', {
+        'clients_data': clients_data,
+        'total_clients': len(clients_data),
+        'clients_actifs': clients_actifs,
+        'total_rdv': total_rdv,
+        'is_coach': is_coach,
     })

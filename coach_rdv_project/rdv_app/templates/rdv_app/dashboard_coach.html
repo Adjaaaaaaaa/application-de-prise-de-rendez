@@ -5,6 +5,8 @@
 {% block content %}
 <div class="container" style="max-width:900px;">
   <h2 class="mb-4 text-center">Tableau de bord Coach</h2>
+  
+  <!-- Statistiques de base -->
   <div class="row mb-4">
     <div class="col-md-4">
       <div class="card text-center shadow-sm">
@@ -20,7 +22,7 @@
         <div class="card-body">
           <h5 class="card-title">Clients</h5>
           <p class="display-6">{{ nb_clients }}</p>
-          <a href="#" class="btn btn-outline-primary w-100 disabled">Voir les clients</a>
+          <a href="{% url 'clients_coach' %}" class="btn btn-outline-primary w-100">Voir les clients</a>
         </div>
       </div>
     </div>
@@ -34,58 +36,146 @@
       </div>
     </div>
   </div>
-  <h4 class="mb-3">Prochains ateliers</h4>
-  <div class="row row-cols-1 row-cols-md-2 g-4">
-    {% for atelier in ateliers %}
-      <div class="col">
-        <div class="card h-100">
-          {% if atelier.photo %}
-            <img src="{{ atelier.photo.url }}" class="card-img-top" alt="Photo de l'atelier {{ atelier.titre }}" style="object-fit:cover; height:180px;">
-          {% endif %}
-          <div class="card-body">
-            <h5 class="card-title">{{ atelier.titre }}</h5>
-            <p class="card-text small">{{ atelier.description|truncatechars:80 }}</p>
-            <ul class="list-unstyled mb-2">
-              <li><strong>Date :</strong> {{ atelier.date|date:"d/m/Y" }}</li>
-              <li><strong>Durée :</strong> {{ atelier.duree|default:'Non précisée' }}</li>
-              <li><strong>Lieu :</strong> {{ atelier.lieu|default:'Non précisé' }}</li>
-              <li><strong>Tarif :</strong> {{ atelier.tarif }} €</li>
-            </ul>
-            <a href="{% url 'ateliers_admin' %}?edit={{ atelier.id }}" class="btn btn-sm btn-warning">Modifier</a>
+
+  <!-- Section des gains par mois -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div class="card-header bg-success text-white">
+          <h4 class="mb-0">
+            <i class="bi bi-graph-up"></i> Gains du mois de {{ current_month|date:"F Y" }}
+          </h4>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <!-- Total des gains -->
+            <div class="col-md-4 text-center">
+              <div class="border-end">
+                <h3 class="text-success mb-2">{{ gains_total_mois }}€</h3>
+                <p class="text-muted mb-1">Total des gains</p>
+                {% if evolution_pct != 0 %}
+                  <span class="badge {% if evolution_pct > 0 %}bg-success{% else %}bg-danger{% endif %}">
+                    {% if evolution_pct > 0 %}+{% endif %}{{ evolution_pct|floatformat:1 }}% vs mois précédent
+                  </span>
+                {% endif %}
+              </div>
+            </div>
+            
+            <!-- Gains des rendez-vous -->
+            <div class="col-md-4 text-center">
+              <div class="border-end">
+                <h4 class="text-primary mb-2">{{ gains_rdv_mois }}€</h4>
+                <p class="text-muted mb-1">Rendez-vous ({{ nb_rdv_mois }})</p>
+                <small class="text-muted">
+                  {% if nb_rdv_mois > 0 %}
+                    Moyenne: {{ gain_moyen_rdv|floatformat:0 }}€/RDV
+                  {% endif %}
+                </small>
+              </div>
+            </div>
+            
+            <!-- Gains des ateliers -->
+            <div class="col-md-4 text-center">
+              <h4 class="text-info mb-2">{{ gains_ateliers_mois }}€</h4>
+              <p class="text-muted mb-1">Ateliers ({{ nb_ateliers_mois }})</p>
+              <small class="text-muted">
+                {% if nb_participants_mois > 0 %}
+                  {{ nb_participants_mois }} participants
+                {% endif %}
+              </small>
+            </div>
           </div>
         </div>
       </div>
-    {% empty %}
-      <div class="col-12"><div class="alert alert-info text-center">Aucun atelier à venir.</div></div>
-    {% endfor %}
+    </div>
   </div>
-  <h4 class="mt-5 mb-3">Rendez-vous à venir</h4>
-  <table class="table table-striped">
-    <thead>
-      <tr>
-        <th>Date</th>
-        <th>Heure</th>
-        <th>Client</th>
-        <th>Objet</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for seance in seances %}
-      <tr>
-        <td>{{ seance.date|date:'d/m/Y' }}</td>
-        <td>{{ seance.heure_debut|time:'H:i' }}</td>
-        <td>{{ seance.client.get_full_name|default:seance.client.username }}</td>
-        <td>{{ seance.objet }}</td>
-        <td>
-          <a href="{% url 'seance_update' seance.id %}" class="btn btn-warning btn-sm">Modifier</a>
-          <a href="{% url 'seance_delete' seance.id %}" class="btn btn-danger btn-sm" onclick="return confirm('Annuler ce rendez-vous ?');">Annuler</a>
-        </td>
-      </tr>
-      {% empty %}
-      <tr><td colspan="5">Aucun rendez-vous à venir.</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
+
+  <!-- Détail des tarifs -->
+  <div class="row">
+    <div class="col-md-6">
+      <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">
+            <i class="bi bi-calendar-check"></i> Tarifs Rendez-vous
+          </h5>
+        </div>
+        <div class="card-body">
+          <ul class="list-unstyled mb-0">
+            <li class="d-flex justify-content-between mb-2">
+              <span>Première consultation</span>
+              <span class="fw-bold">49€</span>
+            </li>
+            <li class="d-flex justify-content-between mb-2">
+              <span>Coaching individuel</span>
+              <span class="fw-bold">120€</span>
+            </li>
+            <li class="d-flex justify-content-between mb-2">
+              <span>Suivi motivationnel</span>
+              <span class="fw-bold">120€</span>
+            </li>
+            <li class="d-flex justify-content-between">
+              <span>Bilan de compétences</span>
+              <span class="fw-bold">120€</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-6">
+      <div class="card shadow-sm">
+        <div class="card-header bg-info text-white">
+          <h5 class="mb-0">
+            <i class="bi bi-people"></i> Statistiques du mois
+          </h5>
+        </div>
+        <div class="card-body">
+          <ul class="list-unstyled mb-0">
+            <li class="d-flex justify-content-between mb-2">
+              <span>Rendez-vous réalisés</span>
+              <span class="fw-bold">{{ nb_rdv_mois }}</span>
+            </li>
+            <li class="d-flex justify-content-between mb-2">
+              <span>Ateliers organisés</span>
+              <span class="fw-bold">{{ nb_ateliers_mois }}</span>
+            </li>
+            <li class="d-flex justify-content-between mb-2">
+              <span>Participants ateliers</span>
+              <span class="fw-bold">{{ nb_participants_mois }}</span>
+            </li>
+            <li class="d-flex justify-content-between">
+              <span>Gain moyen/RDV</span>
+              <span class="fw-bold">
+                {% if nb_rdv_mois > 0 %}
+                  {{ gain_moyen_rdv|floatformat:0 }}€
+                {% else %}
+                  0€
+                {% endif %}
+              </span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
+
+<style>
+.card {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+}
+
+.border-end {
+  border-right: 1px solid #dee2e6;
+}
+
+.bi {
+  margin-right: 5px;
+}
+</style>
 {% endblock %}

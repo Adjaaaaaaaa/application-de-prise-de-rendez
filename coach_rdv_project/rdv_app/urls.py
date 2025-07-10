@@ -38,5 +38,6 @@ urlpatterns = [
     path('coach/ateliers/', views.ateliers_admin_view, name='ateliers_admin'),
     path('mes-ateliers/', views.mes_ateliers_view, name='mes_ateliers'),
     path('disponibilites_coach/', views.disponibilites_coach_view, name='disponibilites_coach'),
+    path('clients_coach/', views.clients_coach_view, name='clients_coach'),
     path('profil_client/<int:user_id>/', views.profil_client_view, name='profil_client'),
 ]
