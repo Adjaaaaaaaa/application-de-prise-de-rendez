@@ -49,7 +49,7 @@
         <div class="card-body">
           <div class="row">
             <!-- Total des gains -->
-            <div class="col-md-4 text-center">
+            <div class="col-md-6 text-center">
               <div class="border-end">
                 <h3 class="text-success mb-2">{{ gains_total_mois }}€</h3>
                 <p class="text-muted mb-1">Total des gains</p>
@@ -60,22 +60,8 @@
                 {% endif %}
               </div>
             </div>
-            
-            <!-- Gains des rendez-vous -->
-            <div class="col-md-4 text-center">
-              <div class="border-end">
-                <h4 class="text-primary mb-2">{{ gains_rdv_mois }}€</h4>
-                <p class="text-muted mb-1">Rendez-vous ({{ nb_rdv_mois }})</p>
-                <small class="text-muted">
-                  {% if nb_rdv_mois > 0 %}
-                    Moyenne: {{ gain_moyen_rdv|floatformat:0 }}€/RDV
-                  {% endif %}
-                </small>
-              </div>
-            </div>
-            
             <!-- Gains des ateliers -->
-            <div class="col-md-4 text-center">
+            <div class="col-md-6 text-center">
               <h4 class="text-info mb-2">{{ gains_ateliers_mois }}€</h4>
               <p class="text-muted mb-1">Ateliers ({{ nb_ateliers_mois }})</p>
               <small class="text-muted">
@@ -144,13 +130,9 @@
               <span class="fw-bold">{{ nb_participants_mois }}</span>
             </li>
             <li class="d-flex justify-content-between">
-              <span>Gain moyen/RDV</span>
+              <span>Heures travaillées</span>
               <span class="fw-bold">
-                {% if nb_rdv_mois > 0 %}
-                  {{ gain_moyen_rdv|floatformat:0 }}€
-                {% else %}
-                  0€
-                {% endif %}
+                {{ heures_travaillees_mois }}h{% if minutes_restantes %}{{ minutes_restantes }}{% endif %}
               </span>
             </li>
           </ul>

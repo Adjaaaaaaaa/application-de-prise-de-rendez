@@ -40,4 +40,6 @@ urlpatterns = [
     path('disponibilites_coach/', views.disponibilites_coach_view, name='disponibilites_coach'),
     path('clients_coach/', views.clients_coach_view, name='clients_coach'),
     path('profil_client/<int:user_id>/', views.profil_client_view, name='profil_client'),
+    path('client/<int:user_id>/rdvs/', views.rdvs_client_view, name='rdvs_client'),
+    path('coach/calendrier/', views.calendrier_coach_view, name='calendrier_coach'),
 ]

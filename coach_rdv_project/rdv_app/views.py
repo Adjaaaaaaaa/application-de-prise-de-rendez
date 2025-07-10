@@ -50,6 +50,8 @@ def add_notifications_to_context(context, user):
 
 def accueil(request):
     is_coach = request.user.is_authenticated and (request.user.groups.filter(name='coach').exists() or request.user.username.lower() == 'adja')
+    if is_coach:
+        return redirect('calendrier_coach')
     context = {'is_coach': is_coach}
     context = add_notifications_to_context(context, request.user)
     if request.user.is_authenticated:
@@ -107,7 +109,7 @@ def dashboard(request):
     context['is_coach'] = is_coach
     context = add_notifications_to_context(context, request.user)
     return render(request, template, context)
-
+    
 @login_required
 def dashboard_coach_view(request):
     # Vérification du rôle coach
@@ -215,6 +217,17 @@ def dashboard_coach_view(request):
     if nb_rdv_mois > 0:
         gain_moyen_rdv = gains_rdv_mois / nb_rdv_mois
     
+    # Calcul du nombre d'heures travaillées dans le mois
+    total_minutes = 0
+    for seance in seances_mois:
+        objet = seance.objet.lower()
+        if 'première' in objet or 'premiere' in objet:
+            total_minutes += 30
+        else:
+            total_minutes += 120
+    heures_travaillees_mois = total_minutes // 60
+    minutes_restantes = total_minutes % 60
+    
     is_coach = True
     return render(request, 'rdv_app/dashboard_coach.html', {
         'nb_ateliers': nb_ateliers,
@@ -228,7 +241,8 @@ def dashboard_coach_view(request):
         'nb_participants_mois': nb_participants_mois,
         'nb_rdv_mois': nb_rdv_mois,
         'nb_ateliers_mois': nb_ateliers_mois,
-        'gain_moyen_rdv': gain_moyen_rdv,
+        'heures_travaillees_mois': heures_travaillees_mois,
+        'minutes_restantes': minutes_restantes,
         'current_month': current_month,
         'current_year': current_year,
         'is_coach': is_coach,
@@ -504,7 +518,7 @@ def seance_update_view(request, pk):
                     fail_silently=True,
                 )
             messages.success(request, 'Le rendez-vous a bien été modifié.')
-            return redirect('dashboard')
+            return redirect('calendrier_coach')
     return render(request, 'rdv_app/seance_update.html', {'seance': seance, 'is_coach': is_coach})
 
 @login_required
@@ -514,7 +528,7 @@ def seance_delete_view(request, pk):
     is_coach = request.user.is_authenticated and (request.user.groups.filter(name='coach').exists() or request.user.username.lower() == 'adja')
     # Seul le client ou le coach peut annuler
     if not (request.user == seance.client or is_coach):
-        return redirect('dashboard')
+            return redirect('dashboard')
     if request.method == 'POST':
         client = seance.client
         # Identifier le coach (supposons que c'est l'utilisateur 'adja' ou un staff)
@@ -553,7 +567,7 @@ def seance_delete_view(request, pk):
             messages.success(request, 'Votre rendez-vous a bien été annulé et le coach a été notifié.')
         
         seance.delete()
-        return redirect('dashboard')
+        return redirect('calendrier_coach')
     return render(request, 'rdv_app/seance_confirm_delete.html', {'seance': seance, 'is_coach': is_coach})
 
 @login_required
@@ -652,6 +666,22 @@ def profil_client_view(request, user_id):
         'profile': profile,
         'user_obj': user_obj,
         'show_update_btn': False,
+        'is_coach': is_coach,
+    })
+
+@login_required
+def rdvs_client_view(request, user_id):
+    # Vérification du rôle coach
+    if not (request.user.groups.filter(name='coach').exists() or request.user.username.lower() == 'adja'):
+        return redirect('dashboard')
+    from django.contrib.auth.models import User
+    from .models import Seance
+    client = User.objects.get(pk=user_id)
+    seances = Seance.objects.filter(client=client).order_by('-date', '-heure_debut')
+    is_coach = True
+    return render(request, 'rdv_app/rdvs_client.html', {
+        'client': client,
+        'seances': seances,
         'is_coach': is_coach,
     })
 
@@ -836,5 +866,71 @@ def clients_coach_view(request):
         'total_clients': len(clients_data),
         'clients_actifs': clients_actifs,
         'total_rdv': total_rdv,
+        'is_coach': is_coach,
+    })
+
+@login_required
+def calendrier_coach_view(request):
+    # Vérification du rôle coach
+    if not (request.user.groups.filter(name='coach').exists() or request.user.username.lower() == 'adja'):
+        return redirect('dashboard')
+    from .models import Seance, Atelier
+    from datetime import datetime, date, timedelta
+    import calendar
+    from django.contrib.auth.models import User
+
+    # Récupérer le mois et l'année à afficher
+    today = date.today()
+    month = int(request.GET.get('month', today.month))
+    year = int(request.GET.get('year', today.year))
+
+    # Premier et dernier jour du mois
+    first_day = date(year, month, 1)
+    last_day = date(year, month, calendar.monthrange(year, month)[1])
+
+    # Générer la grille du calendrier (semaines)
+    cal = calendar.Calendar(firstweekday=0)  # Lundi=0
+    month_days = list(cal.itermonthdates(year, month))
+    weeks = [month_days[i:i+7] for i in range(0, len(month_days), 7)]
+
+    # Récupérer les réservations (rendez-vous et ateliers) du mois
+    # On considère que tous les Seance concernent le coach connecté
+    seances = Seance.objects.filter(date__gte=first_day, date__lte=last_day)
+    ateliers = Atelier.objects.filter(date__gte=first_day, date__lte=last_day)
+
+    # Indexer les réservations par date
+    reservations = {}
+    for seance in seances:
+        reservations.setdefault(seance.date, []).append({
+            'type': 'rdv',
+            'heure': seance.heure_debut,
+            'client': seance.client.get_full_name() or seance.client.username,
+            'objet': seance.objet,
+            'id': seance.id,  # Ajout de l'identifiant du rendez-vous
+        })
+    for atelier in ateliers:
+        reservations.setdefault(atelier.date, []).append({
+            'type': 'atelier',
+            'titre': atelier.titre,
+            'participants': atelier.participants.count(),
+        })
+
+    # Pour navigation mois précédent/suivant
+    prev_month = (month - 1) if month > 1 else 12
+    prev_year = year if month > 1 else year - 1
+    next_month = (month + 1) if month < 12 else 1
+    next_year = year if month < 12 else year + 1
+
+    is_coach = True
+    return render(request, 'rdv_app/calendrier_coach.html', {
+        'weeks': weeks,
+        'month': month,
+        'year': year,
+        'reservations': reservations,
+        'prev_month': prev_month,
+        'prev_year': prev_year,
+        'next_month': next_month,
+        'next_year': next_year,
+        'today': today,
         'is_coach': is_coach,
     })

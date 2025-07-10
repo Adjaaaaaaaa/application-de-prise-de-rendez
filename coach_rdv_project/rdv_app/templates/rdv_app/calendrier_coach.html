@@ -1,0 +1,260 @@
+{% extends 'rdv_app/base.html' %}
+{% load calendar_extras %}
+
+{% block title %}Calendrier Coach{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width:1100px;">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">
+      <i class="bi bi-calendar3 text-primary"></i> Calendrier mensuel
+    </h2>
+    <div class="d-flex align-items-center gap-2">
+      <a href="?month={{ prev_month }}&year={{ prev_year }}" class="btn btn-outline-secondary me-2"><i class="bi bi-chevron-left"></i> Précédent</a>
+      <span class="fw-bold fs-5">{{ month }}/</span>
+      <form method="get" class="d-inline-block" style="margin-bottom:0;">
+        <input type="hidden" name="month" value="{{ month }}">
+        <select name="year" class="form-select d-inline-block w-auto" style="display:inline-block;" onchange="this.form.submit()">
+          {% for y in 2022|get_range:2032 %}
+            <option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>
+          {% endfor %}
+        </select>
+      </form>
+      <a href="?month={{ next_month }}&year={{ next_year }}" class="btn btn-outline-secondary ms-2">Suivant <i class="bi bi-chevron-right"></i></a>
+    </div>
+  </div>
+
+  <div class="calendar-google shadow-sm">
+    <div class="calendar-header row g-0">
+      {% for day in "LMMJVSD" %}
+        <div class="col calendar-day-header">{{ day }}</div>
+      {% endfor %}
+    </div>
+    {% for week in weeks %}
+      <div class="row g-0 calendar-week">
+        {% for day in week %}
+          <div class="col calendar-cell {% if day.month != month %}calendar-other-month{% endif %}">
+            <div class="calendar-date small fw-bold">
+              {% if day == today %}
+                <span class="calendar-date-today">{{ day.day }}</span>
+              {% else %}
+                {{ day.day }}
+              {% endif %}
+            </div>
+            <div class="calendar-events-list">
+              {% for event in reservations|get_item:day %}
+                {% if event.type == 'rdv' %}
+                  <div class="calendar-event calendar-event-rdv mb-1"
+                       data-bs-toggle="modal" data-bs-target="#rdvModal"
+                       data-id="{{ event.id }}"
+                       data-date="{{ day|date:'d/m/Y' }}"
+                       data-heure="{{ event.heure|time:'H:i' }}"
+                       data-client="{{ event.client }}"
+                       data-objet="{{ event.objet }}">
+                    <span class="calendar-dot calendar-dot-rdv"></span>
+                    <span class="calendar-event-hour">{{ event.heure|time:'H:i' }}</span>
+                    <span class="calendar-event-title">RDV <span class="fw-bold">{{ event.client }}</span></span>
+                    <span class="calendar-event-objet small text-muted">{{ event.objet }}</span>
+                  </div>
+                {% elif event.type == 'atelier' %}
+                  <div class="calendar-event calendar-event-atelier mb-1" title="Atelier : {{ event.titre }} ({{ event.participants }} participants)">
+                    <span class="calendar-dot calendar-dot-atelier"></span>
+                    <span class="calendar-event-title">Atelier : <span class="fw-bold">{{ event.titre }}</span></span>
+                    <span class="calendar-event-participants small">👥 {{ event.participants }}</span>
+                  </div>
+                {% endif %}
+              {% endfor %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Modal RDV -->
+<div class="modal fade" id="rdvModal" tabindex="-1" aria-labelledby="rdvModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="rdvModalLabel">Détail du rendez-vous</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      </div>
+      <div class="modal-body">
+        <ul class="list-unstyled mb-0">
+          <li><strong>Date :</strong> <span id="rdv-date"></span></li>
+          <li><strong>Heure :</strong> <span id="rdv-heure"></span></li>
+          <li><strong>Client :</strong> <span id="rdv-client"></span></li>
+          <li><strong>Objet :</strong> <span id="rdv-objet"></span></li>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <a id="rdv-modifier" href="#" class="btn btn-warning">Modifier</a>
+        <a id="rdv-annuler" href="#" class="btn btn-danger" onclick="return confirm('Annuler ce rendez-vous ?');">Annuler</a>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.calendar-google {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 4px 32px #e3e6ea;
+  padding: 0.5em 0.5em 1.5em 0.5em;
+  margin-bottom: 2em;
+  overflow-x: auto;
+}
+.calendar-header {
+  background: #f7fafd;
+  border-radius: 18px 18px 0 0;
+  font-weight: 700;
+  color: #1976d2;
+  font-size: 1.1rem;
+  text-align: center;
+  box-shadow: 0 2px 8px #e3e6ea;
+}
+.calendar-day-header {
+  padding: 0.7em 0;
+  border-bottom: 1px solid #e3e6ea;
+  letter-spacing: 1px;
+}
+.calendar-week {
+  min-height: 90px;
+}
+.calendar-cell {
+  min-height: 110px;
+  border: 1px solid #f0f0f0;
+  background: #fff;
+  padding: 0.3em 0.4em 0.7em 0.4em;
+  position: relative;
+  vertical-align: top;
+  font-size: 0.97rem;
+  transition: box-shadow 0.18s;
+}
+.calendar-cell:hover {
+  box-shadow: 0 4px 16px #e3e6ea;
+  z-index: 2;
+}
+.calendar-other-month {
+  background: #f7fafd;
+  color: #bbb;
+}
+.calendar-date {
+  position: absolute;
+  top: 0.3em;
+  right: 0.7em;
+  font-size: 0.95em;
+  color: #1976d2;
+}
+.calendar-date-today {
+  display: inline-block;
+  background: #fff;
+  color: #d32f2f;
+  border: 2.5px solid #d32f2f;
+  border-radius: 50%;
+  width: 2.1em;
+  height: 2.1em;
+  line-height: 2em;
+  text-align: center;
+  font-weight: bold;
+  font-size: 1.1em;
+  box-shadow: 0 2px 8px #f8bdbd;
+}
+.calendar-events-list {
+  margin-top: 1.7em;
+}
+.calendar-event {
+  border-radius: 16px;
+  padding: 0.3em 0.8em 0.3em 1.7em;
+  font-size: 0.97em;
+  display: block;
+  position: relative;
+  margin-bottom: 0.4em;
+  box-shadow: 0 2px 8px #e3e6ea;
+  cursor: pointer;
+  transition: background 0.18s, box-shadow 0.18s;
+}
+.calendar-event:hover {
+  background: #e3f2fd;
+  box-shadow: 0 4px 16px #b3d7f6;
+}
+.calendar-event-rdv {
+  background: #e3f2fd;
+  color: #1976d2;
+  border-left: 5px solid #1976d2;
+}
+.calendar-event-atelier {
+  background: #fff3e0;
+  color: #e65100;
+  border-left: 5px solid #ff9800;
+}
+.calendar-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.calendar-dot-rdv {
+  background: #1976d2;
+}
+.calendar-dot-atelier {
+  background: #ff9800;
+}
+.calendar-event-hour {
+  font-weight: 700;
+  margin-right: 0.4em;
+}
+.calendar-event-title {
+  font-weight: 600;
+}
+.calendar-event-objet {
+  display: block;
+  font-size: 0.92em;
+}
+.calendar-event-participants {
+  margin-left: 0.5em;
+  color: #888;
+}
+@media (max-width: 900px) {
+  .calendar-google { padding: 0.2em 0.1em 1em 0.1em; }
+  .calendar-cell { min-height: 80px; font-size: 0.93rem; }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var rdvModal = document.getElementById('rdvModal');
+  var rdvDate = document.getElementById('rdv-date');
+  var rdvHeure = document.getElementById('rdv-heure');
+  var rdvClient = document.getElementById('rdv-client');
+  var rdvObjet = document.getElementById('rdv-objet');
+  var rdvModifier = document.getElementById('rdv-modifier');
+  var rdvAnnuler = document.getElementById('rdv-annuler');
+
+  document.querySelectorAll('.calendar-event-rdv').forEach(function(el) {
+    el.addEventListener('click', function() {
+      var id = el.getAttribute('data-id');
+      var date = el.getAttribute('data-date');
+      var heure = el.getAttribute('data-heure');
+      var client = el.getAttribute('data-client');
+      var objet = el.getAttribute('data-objet');
+      rdvDate.textContent = date;
+      rdvHeure.textContent = heure;
+      rdvClient.textContent = client;
+      rdvObjet.textContent = objet;
+      rdvModifier.href = '/rendezvous/' + id + '/modifier/';
+      rdvAnnuler.href = '/rendezvous/' + id + '/annuler/';
+    });
+  });
+});
+</script>
+
+{% comment %} Utilitaire pour accéder à une clé de dict dans le template {% endcomment %}
+{% if False %}{{ reservations|get_item:today }}{% endif %}
+{% endblock %} 

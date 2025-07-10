@@ -88,6 +88,9 @@
                   <a href="{% url 'messages_coach' %}?client={{ client_info.client.id }}" class="btn btn-outline-info btn-sm">
                     <i class="bi bi-chat"></i> Messages
                   </a>
+                  <a href="{% url 'rdvs_client' client_info.client.id %}" class="btn btn-outline-warning btn-sm">
+                    <i class="bi bi-calendar-event"></i> Rendez-vous
+                  </a>
                 </div>
               </div>
             </div>
