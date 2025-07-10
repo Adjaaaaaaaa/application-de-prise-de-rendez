@@ -1,5 +1,5 @@
 from django import forms
-from .models import Seance, Profile, Message, Disponibilite, Indisponibilite
+from .models import Seance, Profile, Message, Disponibilite, Indisponibilite, Atelier
 from datetime import time, timedelta, datetime
 from django.utils.timezone import now
 from django.contrib.auth.forms import UserCreationForm
@@ -132,3 +132,37 @@ class IndisponibiliteForm(forms.ModelForm):
             'heure_debut': forms.TimeInput(attrs={'type': 'time'}),
             'heure_fin': forms.TimeInput(attrs={'type': 'time'}),
         }
+
+class AtelierForm(forms.ModelForm):
+    class Meta:
+        model = Atelier
+        fields = ['titre', 'description', 'date', 'duree', 'nombre_maximal', 'lieu', 'tarif', 'photo']
+        widgets = {
+            'date': forms.DateInput(attrs={'type': 'date'}),
+            'description': forms.Textarea(attrs={'rows': 3, 'placeholder': "Description de l'atelier"}),
+            'duree': forms.TextInput(attrs={'placeholder': 'Durée (ex: 2h)'}),
+            'lieu': forms.TextInput(attrs={'placeholder': "Lieu de l'atelier"}),
+            'tarif': forms.NumberInput(attrs={'min': 0, 'step': 1, 'placeholder': 'Tarif en €'}),
+            'nombre_maximal': forms.NumberInput(attrs={'min': 1, 'step': 1, 'placeholder': 'Nombre maximal de participants'}),
+        }
+
+    def clean_photo(self):
+        photo = self.cleaned_data.get('photo')
+        if photo:
+            if not photo.content_type in ['image/jpeg', 'image/png']:
+                raise forms.ValidationError('Format de photo non supporté. Utilisez jpg ou png.')
+            if photo.size > 2*1024*1024:
+                raise forms.ValidationError('La taille de la photo ne doit pas dépasser 2 Mo.')
+        return photo
+
+    def clean_lieu(self):
+        lieu = self.cleaned_data.get('lieu')
+        if not lieu:
+            raise forms.ValidationError('Le lieu est obligatoire.')
+        return lieu
+
+    def clean_nombre_maximal(self):
+        nombre = self.cleaned_data.get('nombre_maximal')
+        if nombre is not None and nombre < 1:
+            raise forms.ValidationError('Le nombre de places doit être au moins 1.')
+        return nombre

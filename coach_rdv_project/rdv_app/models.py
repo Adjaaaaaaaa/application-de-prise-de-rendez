@@ -40,7 +40,8 @@ class Atelier(models.Model):
     date = models.DateField()
     duree = models.CharField(max_length=100, blank=True, null=True)
     lieu = models.CharField(max_length=200, blank=True, null=True)
-    tarif = models.DecimalField(max_digits=6, decimal_places=2)
+    tarif = models.PositiveIntegerField()
+    nombre_maximal = models.PositiveIntegerField(default=10)
     photo = models.ImageField(upload_to='ateliers/', blank=True, null=True)
     participants = models.ManyToManyField(User, related_name='ateliers_inscrits', blank=True)
 

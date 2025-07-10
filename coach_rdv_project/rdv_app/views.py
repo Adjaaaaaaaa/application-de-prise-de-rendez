@@ -50,8 +50,6 @@ def add_notifications_to_context(context, user):
 
 def accueil(request):
     is_coach = request.user.is_authenticated and (request.user.groups.filter(name='coach').exists() or request.user.username.lower() == 'adja')
-    if is_coach:
-        return redirect('calendrier_coach')
     context = {'is_coach': is_coach}
     context = add_notifications_to_context(context, request.user)
     if request.user.is_authenticated:
@@ -742,21 +740,30 @@ def ateliers_admin_view(request):
     ateliers = Atelier.objects.all().order_by('-date')
     form = AtelierForm()
     edit_id = request.GET.get('edit')
+    inscrits_id = request.GET.get('inscrits')
     edit_atelier = None
+    inscrits_atelier = None
     if edit_id:
         edit_atelier = Atelier.objects.get(pk=edit_id)
         form = AtelierForm(instance=edit_atelier)
+    if inscrits_id:
+        try:
+            inscrits_atelier = Atelier.objects.get(pk=inscrits_id)
+        except Atelier.DoesNotExist:
+            inscrits_atelier = None
     if request.method == 'POST':
         if 'delete_id' in request.POST:
             Atelier.objects.filter(pk=request.POST['delete_id']).delete()
             return redirect('ateliers_admin')
-        elif edit_id:
-            form = AtelierForm(request.POST, instance=edit_atelier)
+        post_edit_id = request.POST.get('edit_id')
+        if post_edit_id:
+            edit_atelier = Atelier.objects.get(pk=post_edit_id)
+            form = AtelierForm(request.POST, request.FILES, instance=edit_atelier)
             if form.is_valid():
                 form.save()
                 return redirect('ateliers_admin')
         else:
-            form = AtelierForm(request.POST)
+            form = AtelierForm(request.POST, request.FILES)
             if form.is_valid():
                 form.save()
                 return redirect('ateliers_admin')
@@ -766,6 +773,7 @@ def ateliers_admin_view(request):
         'form': form,
         'edit_id': edit_id,
         'edit_atelier': edit_atelier,
+        'inscrits_atelier': inscrits_atelier,
         'is_coach': is_coach,
     })
 

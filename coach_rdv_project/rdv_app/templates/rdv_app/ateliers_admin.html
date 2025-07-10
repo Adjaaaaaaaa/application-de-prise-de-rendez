@@ -3,56 +3,142 @@
 {% block title %}Gérer les ateliers{% endblock %}
 
 {% block content %}
-<div class="container" style="max-width:900px;">
-  <h2 class="mb-4 text-center">Gestion des ateliers</h2>
-  <div class="row">
-    <div class="col-md-5">
-      <h5>{% if edit_id %}Modifier l'atelier{% else %}Ajouter un atelier{% endif %}</h5>
-      <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-primary w-100 mt-2">{% if edit_id %}Enregistrer{% else %}Ajouter{% endif %}</button>
-        {% if edit_id %}
-          <a href="{% url 'ateliers_admin' %}" class="btn btn-link w-100 mt-2">Annuler</a>
-        {% endif %}
-      </form>
-    </div>
-    <div class="col-md-7">
-      <h5>Liste des ateliers</h5>
-      <table class="table table-bordered">
-        <thead>
-          <tr>
-            <th>Titre</th><th>Date</th><th>Tarif</th><th>Inscrits</th><th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for atelier in ateliers %}
-          <tr>
-            <td>{{ atelier.titre }}</td>
-            <td>{{ atelier.date|date:"d/m/Y" }}</td>
-            <td>{{ atelier.tarif }} €</td>
-            <td>
-              {% for user in atelier.participants.all %}
-                <span class="badge bg-info text-dark">{{ user.get_full_name|default:user.username }}</span>
-              {% empty %}
-                <span class="text-muted">Aucun</span>
-              {% endfor %}
-            </td>
-            <td>
-              <a href="{% url 'ateliers_admin' %}?edit={{ atelier.id }}" class="btn btn-sm btn-warning">Modifier</a>
-              <form method="post" style="display:inline;">
-                {% csrf_token %}
-                <input type="hidden" name="delete_id" value="{{ atelier.id }}">
-                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Supprimer cet atelier ?');">Supprimer</button>
-              </form>
-            </td>
-          </tr>
-          {% empty %}
-          <tr><td colspan="5" class="text-center text-muted">Aucun atelier</td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
+<div class="container" style="max-width:1100px;">
+  <div class="row mb-4">
+    <div class="col-12 text-end">
+      <a href="{% url 'ateliers_admin' %}?create=1#form-atelier" class="btn btn-success btn-lg"><i class="bi bi-plus-circle"></i> Créer un atelier</a>
     </div>
   </div>
+  <div class="row">
+    {% if edit_id or request.GET.create %}
+    <div class="col-md-6 offset-md-3 mb-4" id="form-atelier">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {% if form.errors %}
+              <div class="alert alert-danger">{{ form.errors }}</div>
+            {% endif %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary w-100 mt-2">{% if edit_id %}Enregistrer{% else %}Ajouter{% endif %}</button>
+            <a href="{% url 'ateliers_admin' %}" class="btn btn-link w-100 mt-2">Annuler</a>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="col-md-12">
+      <div class="table-responsive">
+        <table class="table table-striped align-middle">
+          <thead>
+            <tr>
+              <th>Titre</th>
+              <th>Date</th>
+              <th>Tarif</th>
+              <th>Inscrits</th>
+              <th></th>
+              <th></th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for atelier in ateliers %}
+            <tr>
+              <td>{{ atelier.titre }}</td>
+              <td>{{ atelier.date|date:"d/m/Y" }}</td>
+              <td>{{ atelier.tarif }} €</td>
+              <td>{{ atelier.participants.count }}</td>
+              <td><a href="{% url 'ateliers_admin' %}?inscrits={{ atelier.id }}" class="btn btn-info btn-xs py-0 px-2" style="font-size:0.85rem;">Voir inscrits</a></td>
+              <td><a href="{% url 'ateliers_admin' %}?edit={{ atelier.id }}#form-atelier" class="btn btn-warning btn-xs py-0 px-2" style="font-size:0.85rem;">Modifier</a></td>
+              <td>
+                <form method="post" style="display:inline;">
+                  {% csrf_token %}
+                  <input type="hidden" name="delete_id" value="{{ atelier.id }}">
+                  <button type="submit" class="btn btn-danger btn-xs py-0 px-2" style="font-size:0.85rem;" onclick="return confirm('Supprimer cet atelier ?');">Supprimer</button>
+                </form>
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="7" class="text-center text-muted">Aucun atelier</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% if inscrits_atelier %}
+      <div class="card mt-5">
+        <div class="card-header bg-info text-white">
+          <h5 class="mb-0">Inscrits à l'atelier : {{ inscrits_atelier.titre }}</h5>
+        </div>
+        <div class="card-body p-0">
+          <table class="table mb-0">
+            <thead>
+              <tr>
+                <th>Nom</th>
+                <th>Email</th>
+                <th>Profil</th>
+                <th>Message</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for user in inscrits_atelier.participants.all %}
+              <tr>
+                <td>{{ user.get_full_name|default:user.username }}</td>
+                <td>{{ user.email }}</td>
+                <td><a href="{% url 'profil_client' user.id %}" class="btn btn-outline-secondary btn-xs py-0 px-2" style="font-size:0.85rem;">Voir profil</a></td>
+                <td><a href="{% url 'messages_coach' %}?client={{ user.id }}" class="btn btn-outline-primary btn-xs py-0 px-2" style="font-size:0.85rem;">Envoyer message</a></td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="4" class="text-center text-muted">Aucun inscrit</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <div class="card-footer text-end">
+          <a href="{% url 'ateliers_admin' %}" class="btn btn-link">Fermer la liste</a>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Aperçu de la photo uploadée
+    const photoInput = document.querySelector('input[type="file"][name="photo"]');
+    const preview = document.getElementById('photo-preview');
+    if(photoInput && preview) {
+      photoInput.addEventListener('change', function(e) {
+        preview.innerHTML = '';
+        if(this.files && this.files[0]) {
+          const file = this.files[0];
+          if(['image/jpeg','image/png'].includes(file.type)) {
+            if(file.size <= 2*1024*1024) {
+              const reader = new FileReader();
+              reader.onload = function(ev) {
+                preview.innerHTML = '<img src="'+ev.target.result+'" alt="Aperçu" style="max-width:150px;max-height:150px;border-radius:8px;box-shadow:0 2px 8px #ccc;">';
+              }
+              reader.readAsDataURL(file);
+            } else {
+              preview.innerHTML = '<span class="text-danger">Fichier trop volumineux (max 2 Mo).</span>';
+            }
+          } else {
+            preview.innerHTML = '<span class="text-danger">Format non supporté (jpg, png uniquement).</span>';
+          }
+        }
+      });
+    }
+    // Script conservé pour debug éventuel
+    var form = document.querySelector('#form-atelier form');
+    if(form) {
+      form.addEventListener('submit', function(e) {
+        // Pour debug :
+        // alert('Formulaire soumis !');
+      });
+    }
+  });
+</script>
 {% endblock %} 

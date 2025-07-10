@@ -1,6 +1,7 @@
 {% extends 'rdv_app/base.html' %}
 {% block content %}
 <h2>Mes disponibilités</h2>
+<a href="{% url 'calendrier_coach' %}" class="btn btn-outline-primary mb-3">Voir le calendrier mensuel</a>
 <h4 class="mt-4">Bloquer une indisponibilité</h4>
 <form method="post" class="mb-4 d-flex flex-wrap align-items-end gap-2">
     {% csrf_token %}
@@ -51,34 +52,5 @@ window.addEventListener('DOMContentLoaded', updateHeureFields);
       <tr><td colspan="7">Aucune indisponibilité définie.</td></tr>
     {% endfor %}
     </tbody>
-</table>
-
-<h4 class="mt-5 mb-3">Rendez-vous à venir</h4>
-<table class="table table-striped">
-  <thead>
-    <tr>
-      <th>Date</th>
-      <th>Heure</th>
-      <th>Client</th>
-      <th>Objet</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for seance in seances %}
-    <tr>
-      <td>{{ seance.date|date:'d/m/Y' }}</td>
-      <td>{{ seance.heure_debut|time:'H:i' }}</td>
-      <td>{{ seance.client.get_full_name|default:seance.client.username }}</td>
-      <td>{{ seance.objet }}</td>
-      <td>
-        <a href="{% url 'seance_update' seance.id %}" class="btn btn-warning btn-sm">Modifier</a>
-        <a href="{% url 'seance_delete' seance.id %}" class="btn btn-danger btn-sm" onclick="return confirm('Annuler ce rendez-vous ?');">Annuler</a>
-      </td>
-    </tr>
-    {% empty %}
-    <tr><td colspan="5">Aucun rendez-vous à venir.</td></tr>
-    {% endfor %}
-  </tbody>
 </table>
 {% endblock %} 
