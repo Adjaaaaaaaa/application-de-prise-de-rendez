@@ -72,11 +72,25 @@ def signup_view(request):
             group, created = Group.objects.get_or_create(name='client')
             user.groups.add(group)
             login(request, user)
+            next_url = request.GET.get('next') or request.POST.get('next')
+            if next_url:
+                return redirect(next_url)
             return redirect('dashboard')
     else:
         form = SignupForm()
     is_coach = request.user.is_authenticated and (request.user.groups.filter(name='coach').exists() or request.user.username.lower() == 'adja')
     return render(request, 'rdv_app/signup.html', {'form': form, 'is_coach': is_coach})
+
+from django.contrib.auth.views import LoginView
+
+class CustomLoginView(LoginView):
+    template_name = 'rdv_app/login.html'
+
+    def get_success_url(self):
+        user = self.request.user
+        if user.is_authenticated and (user.groups.filter(name='coach').exists() or user.username.lower() == 'adja'):
+            return '/coach/calendrier/'
+        return super().get_success_url()
 
 @login_required
 def dashboard(request):

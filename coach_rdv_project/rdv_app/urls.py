@@ -1,13 +1,14 @@
 from django.urls import path
 from . import views
-from django.contrib.auth import views as auth_views
+from .views import CustomLoginView
 from django.contrib.auth.views import LogoutView
+from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     path('', views.accueil, name='accueil'),
 
     # Auth
-    path('login/', auth_views.LoginView.as_view(template_name='rdv_app/login.html'), name='login'),
+    path('login/', CustomLoginView.as_view(), name='login'),
      path('logout/', LogoutView.as_view(next_page='accueil'), name='logout'),
     path('signup/', views.signup_view, name='signup'),
     path('choix-auth/', views.choix_auth_view, name='choix_auth'),
@@ -21,6 +22,10 @@ urlpatterns = [
 
     path('profile/', views.profile_view, name='profile'),
     path('profile/update/', views.profile_update_view, name='profile_update'),
+    path('password_change/', auth_views.PasswordChangeView.as_view(
+        template_name='rdv_app/password_change.html',
+        success_url='/profile/'
+    ), name='password_change'),
 
     path('about/', views.about_view, name='about'),
 

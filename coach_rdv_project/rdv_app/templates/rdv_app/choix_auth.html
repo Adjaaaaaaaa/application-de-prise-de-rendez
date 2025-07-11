@@ -23,7 +23,7 @@
               <p class="card-text text-muted mb-4">
                 Connectez-vous à votre compte existant pour accéder à vos rendez-vous et ateliers.
               </p>
-              <a href="{% url 'login' %}?next={% url 'prise_rdv' %}" class="btn btn-primary w-100">
+              <a href="{% url 'login' %}{% if request.GET.next %}?next={{ request.GET.next }}{% endif %}" class="btn btn-success w-100">
                 <i class="bi bi-box-arrow-in-right"></i> Se connecter
               </a>
             </div>
@@ -41,7 +41,7 @@
               <p class="card-text text-muted mb-4">
                 Créez votre compte gratuitement pour commencer à prendre des rendez-vous.
               </p>
-              <a href="{% url 'signup' %}" class="btn btn-success w-100">
+              <a href="{% url 'signup' %}{% if request.GET.next %}?next={{ request.GET.next }}{% endif %}" class="btn btn-success w-100">
                 <i class="bi bi-person-plus"></i> S'inscrire
               </a>
             </div>

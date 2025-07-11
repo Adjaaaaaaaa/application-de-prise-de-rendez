@@ -8,6 +8,7 @@
     display: flex;
     min-height: 65vh;
     background: #fff;
+    border-radius: 12px;
     box-shadow: 0 2px 12px #ececec;
     overflow: hidden;
     margin-bottom: 0;
@@ -35,6 +36,10 @@
     margin: 0;
     color: #1976d2;
     letter-spacing: 1px;
+    background: #fff;
+    position: sticky;
+    top: 0;
+    z-index: 2;
   }
   .messenger-client .discussions-list ul {
     list-style: none;
@@ -64,6 +69,15 @@
     border-left: 3px solid #1976d2;
     color: #1976d2;
   }
+  .messenger-client .avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: #e3e6ea;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; color: #1976d2;
+    font-size: 1em;
+    box-shadow: 0 2px 8px #e3e6ea;
+  }
   .messenger-client .discussion {
     flex: 1;
     display: flex;
@@ -87,12 +101,15 @@
     align-items: center;
     gap: 0.7em;
     min-height: 48px;
+    position: sticky;
+    top: 0;
+    z-index: 2;
   }
   .messenger-client .messages-thread {
     flex: 1;
     overflow-y: auto;
     padding: 1.1em 1.1em 0.7em 1.1em;
-    background: #fff;
+    background: #f6f8fc;
     min-height: 180px;
     display: flex;
     flex-direction: column;
@@ -117,7 +134,7 @@
     max-width: 60%;
     padding: 1.1em 1.7em;
     border-radius: 18px;
-    font-size: 1.13rem;
+    font-size: 0.98rem;
     background: #f3f7fb;
     color: #222;
     box-shadow: 0 2px 8px #e3e6ea;
@@ -125,16 +142,19 @@
     position: relative;
     margin-bottom: 0.25em;
     line-height: 1.7;
+    transition: background 0.18s, color 0.18s;
   }
   .messenger-client .msg-row.right .msg-bubble {
     background: #dbeafe;
     color: #1976d2;
     align-self: flex-end;
+    border: 1.5px solid #b6d0f7;
   }
   .messenger-client .msg-row.left .msg-bubble {
     background: #b6e2cd;
     color: #226c3a;
     align-self: flex-start;
+    border: 1.5px solid #8fd1a9;
   }
   .messenger-client .msg-bubble b {
     font-size: 0.95em;
@@ -150,7 +170,7 @@
   .messenger-client .chat-input-bar {
     display: flex;
     align-items: center;
-    padding: 0.7em 0 0.7em 0;
+    padding: 0.4em 0.5em 0.4em 0.5em;
     border-top: 1px solid #ececec;
     background: #fff;
     width: 100%;
@@ -159,6 +179,7 @@
     min-width: 0;
     gap: 0.7em;
     max-width: none;
+    position: relative;
   }
   .messenger-client .chat-input-bar .file-label {
     display: flex;
@@ -167,17 +188,17 @@
     background: none;
     border: none;
     cursor: pointer;
-    margin-right: 0.5em;
+    margin-right: 1em;
     color: #1976d2;
     font-size: 1.7em;
     transition: color 0.18s;
-    padding: 0 0.2em 0 0.1em;
+    padding: 0.2em 0.5em 0.2em 0.5em;
     height: auto;
     width: auto;
   }
   .messenger-client .chat-input-bar .file-label svg {
     width: 28px;
-    height: 28px;
+    height: 50px;
     display: block;
     margin-bottom: 0;
   }
@@ -198,49 +219,25 @@
     outline: none;
     box-shadow: none;
     transition: background 0.18s;
-    min-width: 0;
-    width: 100%;
-    display: block;
-    box-sizing: border-box;
-    max-width: none;
   }
-  .messenger-client .chat-input-bar button.send-btn {
-    background: transparent !important;
-    color: #1976d2 !important;
+  .messenger-client .chat-input-bar button[type="submit"] {
+    background: #1976d2;
+    color: #fff;
     border: none;
-    border-radius: 0;
-    width: auto;
-    height: auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.1em;
-    margin-left: 0.3em;
-    box-shadow: none;
-    cursor: pointer;
-    padding: 0;
-    transition: color 0.18s;
+    border-radius: 16px;
+    padding: 0.7em 1.5em;
+    font-size: 1.08rem;
+    margin-left: 0.5em;
+    transition: background 0.18s;
+    box-shadow: 0 2px 8px #e3e6ea;
   }
-  .messenger-client .chat-input-bar button.send-btn:hover {
-    background: transparent !important;
-    color: #145db2 !important;
+  .messenger-client .chat-input-bar button[type="submit"]:hover {
+    background: #145db2;
   }
-  .messenger-client .chat-input-bar button.send-btn svg {
-    display: block;
-    width: 26px;
-    height: 26px;
-    fill: none;
-    stroke: #1976d2 !important;
-    stroke-width: 2.2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    transition: stroke 0.18s;
-  }
-  .messenger-client .chat-input-bar button.send-btn:hover svg {
-    stroke: #145db2 !important;
-  }
-  .messenger-client .chat-input-bar input[type="text"]:focus {
-    background: #fff;
+  @media (max-width: 900px) {
+    .messenger-client { flex-direction: column; min-height: 80vh; }
+    .messenger-client .discussions-list { width: 100vw; max-width: 100vw; min-width: 0; border-right: none; border-bottom: 1px solid #ececec; height: auto; max-height: 200px; }
+    .messenger-client .discussion { height: 60vh; max-height: 60vh; }
   }
 </style>
 <div class="messenger-client">
@@ -270,8 +267,8 @@
           </svg>
         </label>
         <input type="text" name="content" placeholder="Écrire un message..." autocomplete="off" required />
-        <button type="submit" class="send-btn" title="Envoyer">
-          <svg viewBox="0 0 24 24">
+        <button type="submit" class="send-btn" title="Envoyer" style="background:#fff;border:none;border-radius:16px;padding:0.7em 1.5em;font-size:1.08rem;margin-left:0.5em;box-shadow:0 2px 8px #e3e6ea;">
+          <svg viewBox="0 0 24 24" width="28" height="28">
             <path d="M2 21L23 12L2 3L5 12L2 21Z" fill="none" stroke="#1976d2" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </button>
@@ -301,8 +298,8 @@
           </svg>
         </label>
         <input type="text" name="content" placeholder="Écrire un message..." autocomplete="off" required />
-        <button type="submit" class="send-btn" title="Envoyer">
-          <svg viewBox="0 0 24 24">
+        <button type="submit" class="send-btn" title="Envoyer" style="background:#fff;border:none;border-radius:16px;padding:0.7em 1.5em;font-size:1.08rem;margin-left:0.5em;box-shadow:0 2px 8px #e3e6ea;">
+          <svg viewBox="0 0 24 24" width="28" height="28">
             <path d="M2 21L23 12L2 3L5 12L2 21Z" fill="none" stroke="#1976d2" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </button>
