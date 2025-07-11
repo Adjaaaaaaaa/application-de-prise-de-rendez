@@ -47,4 +47,6 @@ urlpatterns = [
     path('profil_client/<int:user_id>/', views.profil_client_view, name='profil_client'),
     path('client/<int:user_id>/rdvs/', views.rdvs_client_view, name='rdvs_client'),
     path('coach/calendrier/', views.calendrier_coach_view, name='calendrier_coach'),
+    path('temoignage/', views.temoignage_client_view, name='temoignage_client'),
+    path('coach/temoignages/', views.temoignages_admin_view, name='temoignages_admin'),
 ]

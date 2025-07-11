@@ -1,5 +1,5 @@
 from django import forms
-from .models import Seance, Profile, Message, Disponibilite, Indisponibilite, Atelier
+from .models import Seance, Profile, Message, Disponibilite, Indisponibilite, Atelier, Temoinage
 from datetime import time, timedelta, datetime
 from django.utils.timezone import now
 from django.contrib.auth.forms import UserCreationForm
@@ -166,3 +166,12 @@ class AtelierForm(forms.ModelForm):
         if nombre is not None and nombre < 1:
             raise forms.ValidationError('Le nombre de places doit être au moins 1.')
         return nombre
+
+class TemoinageForm(forms.ModelForm):
+    class Meta:
+        model = Temoinage
+        fields = ['texte', 'profession']
+        widgets = {
+            'texte': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Votre témoignage...'}),
+            'profession': forms.TextInput(attrs={'placeholder': 'Votre profession (ex: Ingénieur, Étudiant...)'}),
+        }

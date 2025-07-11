@@ -3,8 +3,8 @@ from django.contrib.auth import login
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group
-from .models import Seance, Profile, Message, Atelier
-from .forms import SeanceForm, SignupForm, ProfileForm, ProfileFullForm, MessageForm
+from .models import Seance, Profile, Message, Atelier, Temoinage
+from .forms import SeanceForm, SignupForm, ProfileForm, ProfileFullForm, MessageForm, TemoinageForm
 from datetime import date
 from django.contrib import messages
 from django.db import models
@@ -49,8 +49,24 @@ def add_notifications_to_context(context, user):
     return context
 
 def accueil(request):
+    import random
     is_coach = request.user.is_authenticated and (request.user.groups.filter(name='coach').exists() or request.user.username.lower() == 'adja')
-    context = {'is_coach': is_coach}
+    from .models import Temoinage
+    temoignages = list(Temoinage.objects.filter(valide=True).order_by('-date'))
+    # On veut toujours un multiple de 3 pour le carrousel
+    n = len(temoignages)
+    if n == 0:
+        temoignages_display = []
+    else:
+        # On limite à 6 ou plus si besoin
+        max_display = 6 if n >= 6 else n
+        temoignages_display = temoignages[:max_display]
+        # Compléter pour avoir un multiple de 3
+        reste = (3 - len(temoignages_display) % 3) % 3
+        if reste:
+            # On complète avec des témoignages aléatoires (avec répétition possible)
+            temoignages_display += random.choices(temoignages, k=reste)
+    context = {'is_coach': is_coach, 'temoignages_display': temoignages_display}
     context = add_notifications_to_context(context, request.user)
     if request.user.is_authenticated:
         return render(request, 'rdv_app/accueil_public.html', context)
@@ -128,7 +144,7 @@ def dashboard_coach_view(request):
     if not (request.user.groups.filter(name='coach').exists() or request.user.username.lower() == 'adja'):
         return redirect('dashboard')
     
-    from .models import Atelier, Seance, Message
+    from .models import Atelier, Seance, Message, Temoinage
     from datetime import datetime, date
     from calendar import monthrange
     
@@ -136,6 +152,7 @@ def dashboard_coach_view(request):
     nb_ateliers = Atelier.objects.count()
     nb_clients = Seance.objects.values('client').distinct().count()
     nb_messages = Message.objects.filter(recipient=request.user).count()
+    nb_temoignages = Temoinage.objects.count()
     
     # Calcul des gains par mois
     current_month = datetime.now().month
@@ -244,7 +261,7 @@ def dashboard_coach_view(request):
     return render(request, 'rdv_app/dashboard_coach.html', {
         'nb_ateliers': nb_ateliers,
         'nb_clients': nb_clients,
-        'nb_messages': nb_messages,
+        'nb_temoignages': nb_temoignages,
         'gains_rdv_mois': gains_rdv_mois,
         'gains_ateliers_mois': gains_ateliers_mois,
         'gains_total_mois': gains_total_mois,
@@ -464,74 +481,144 @@ def profile_update_view(request):
 
 @login_required
 def seance_update_view(request, pk):
-    from .models import Seance, Message
-    from django.core.mail import send_mail
+    from .models import Seance, Indisponibilite
+    from datetime import datetime, time, timedelta
+    from django.utils import timezone
+    from django.contrib.auth.models import User
     seance = get_object_or_404(Seance, pk=pk)
     is_coach = request.user.is_authenticated and (request.user.groups.filter(name='coach').exists() or request.user.username.lower() == 'adja')
-    # Seul le client ou le coach peut modifier
     if not (request.user == seance.client or is_coach):
         return redirect('dashboard')
-    if request.method == 'POST':
-        from datetime import datetime
-        # Récupération des nouvelles valeurs
-        new_date = request.POST.get('date')
-        new_heure = request.POST.get('heure_debut')
-        new_objet = request.POST.get('objet')
-        # Vérification que le nouveau créneau n'est pas déjà pris
-        from .models import Seance
-        conflit = Seance.objects.filter(
-            date=new_date, 
-            heure_debut=new_heure
-        ).exclude(pk=seance.pk).exists()
-        if conflit:
-            messages.error(request, 'Ce créneau est déjà réservé.')
+
+    # Types de consultation avec leurs durées
+    types_consultation = [
+        ('premiere', 'Première consultation', 30),
+        ('coaching', 'Coaching individuel', 120),
+        ('motivation', 'Suivi motivationnel', 120),
+        ('bilan', 'Bilan de compétences', 120)
+    ]
+    # Déterminer le type sélectionné (POST, GET, ou valeur actuelle)
+    type_selectionne = request.POST.get('type') or request.GET.get('type')
+    if not type_selectionne:
+        # Déduire à partir de l'objet du rendez-vous
+        obj = seance.objet.lower()
+        if 'première' in obj or 'premiere' in obj:
+            type_selectionne = 'premiere'
+        elif 'coaching' in obj:
+            type_selectionne = 'coaching'
+        elif 'motivation' in obj:
+            type_selectionne = 'motivation'
+        elif 'bilan' in obj:
+            type_selectionne = 'bilan'
         else:
-            # Sauvegarde des anciennes valeurs pour la notification
-            old_date = seance.date
-            old_heure = seance.heure_debut
-            # Mise à jour du rendez-vous
-            seance.date = new_date
-            seance.heure_debut = new_heure
-            seance.objet = new_objet
-            seance.save()
-            # Notification au client si c'est le coach qui modifie
-            if is_coach:
-                client = seance.client
-                # Message interne
-                Message.objects.create(
-                    sender=request.user,
-                    recipient=client,
-                    content=f"Votre rendez-vous a été modifié : {old_date} {old_heure.strftime('%H:%M')} → {new_date} {new_heure}. Nouvel objet : {new_objet}"
-                )
-                # Email
-                send_mail(
-                    subject="Modification de votre rendez-vous Boost Carrière",
-                    message=f"Bonjour {client.first_name},\n\nVotre rendez-vous a été modifié par le coach :\n- Ancien : {old_date} à {old_heure.strftime('%H:%M')}\n- Nouveau : {new_date} à {new_heure}\n- Objet : {new_objet}\n\nCordialement,\nBoost Carrière",
-                    from_email=None,
-                    recipient_list=[client.email],
-                    fail_silently=True,
-                )
-            else:
-                # Client modifie → notifier le coach
-                from django.contrib.auth.models import User
-                coach = User.objects.filter(username='adja').first() or User.objects.filter(is_staff=True).first()
-                # Message interne
-                Message.objects.create(
-                    sender=request.user,
-                    recipient=coach,
-                    content=f"Le client {seance.client.get_full_name()} a modifié son rendez-vous : {old_date} {old_heure.strftime('%H:%M')} → {new_date} {new_heure}. Nouvel objet : {new_objet}"
-                )
-                # Email
-                send_mail(
-                    subject="Modification de rendez-vous par le client",
-                    message=f"Bonjour,\n\nLe client {seance.client.get_full_name()} ({seance.client.email}) a modifié son rendez-vous :\n- Ancien : {old_date} à {old_heure.strftime('%H:%M')}\n- Nouveau : {new_date} à {new_heure}\n- Objet : {new_objet}\n\nCordialement,\nBoost Carrière",
-                    from_email=None,
-                    recipient_list=[coach.email],
-                    fail_silently=True,
-                )
-            messages.success(request, 'Le rendez-vous a bien été modifié.')
-            return redirect('calendrier_coach')
-    return render(request, 'rdv_app/seance_update.html', {'seance': seance, 'is_coach': is_coach})
+            type_selectionne = 'premiere'
+    duree_minutes = next((duree for type_id, nom, duree in types_consultation if type_id == type_selectionne), 30)
+
+    # Générer les créneaux disponibles (hors celui du rendez-vous actuel)
+    coach = seance.client if is_coach else None
+    if not coach:
+        coach = User.objects.filter(username='adja').first() or User.objects.filter(is_staff=True).first()
+    indisponibilites = Indisponibilite.objects.filter(coach=coach)
+    creneaux_reserves = Seance.objects.exclude(pk=seance.pk).values_list('date', 'heure_debut')
+
+    # Créneaux horaires de base
+    if duree_minutes == 30:
+        horaires_debut = [
+            time(9, 0), time(9, 30), time(10, 0), time(10, 30), time(11, 0), time(11, 30),
+            time(14, 0), time(14, 30), time(15, 0), time(15, 30), time(16, 0), time(16, 30)
+        ]
+    else:
+        horaires_debut = [
+            time(9, 0), time(10, 0), time(11, 0), time(14, 0), time(15, 0)
+        ]
+
+    today = timezone.now().date()
+    creneaux_disponibles = []
+    for i in range(14):
+        date_jour = today + timedelta(days=i)
+        if date_jour.weekday() >= 5:
+            continue
+        for heure_debut in horaires_debut:
+            heure_fin = (datetime.combine(date_jour, heure_debut) + timedelta(minutes=duree_minutes)).time()
+            if heure_fin > time(17, 0):
+                continue
+            # Vérifier si le créneau est réservé
+            creneau_reserve = any(cd == date_jour and ch == heure_debut for cd, ch in creneaux_reserves)
+            if creneau_reserve:
+                continue
+            # Vérifier indisponibilités
+            creneau_disponible = True
+            for indispo in indisponibilites:
+                if indispo.type == 'jour':
+                    if indispo.date_debut <= date_jour <= (indispo.date_fin or indispo.date_debut):
+                        creneau_disponible = False
+                        break
+                else:
+                    if (indispo.date_debut <= date_jour <= (indispo.date_fin or indispo.date_debut) and indispo.heure_debut and indispo.heure_fin):
+                        if not (heure_fin <= indispo.heure_debut or heure_debut >= indispo.heure_fin):
+                            creneau_disponible = False
+                            break
+            if creneau_disponible:
+                creneaux_disponibles.append({
+                    'date': date_jour,
+                    'heure_debut': heure_debut,
+                    'heure_fin': heure_fin,
+                    'duree': duree_minutes,
+                    'duree_nom': f"{duree_minutes} min" if duree_minutes == 30 else f"{duree_minutes//60}h",
+                    'id': f"virtuel_{date_jour}_{heure_debut.hour}_{heure_debut.minute}_{duree_minutes}"
+                })
+    # Ajouter le créneau actuel même s'il n'est plus dispo
+    id_actuel = f"virtuel_{seance.date}_{seance.heure_debut.hour}_{seance.heure_debut.minute}_{duree_minutes}"
+    if not any(c['id'] == id_actuel for c in creneaux_disponibles):
+        heure_fin = (datetime.combine(seance.date, seance.heure_debut) + timedelta(minutes=duree_minutes)).time()
+        creneaux_disponibles.append({
+            'date': seance.date,
+            'heure_debut': seance.heure_debut,
+            'heure_fin': heure_fin,
+            'duree': duree_minutes,
+            'duree_nom': f"{duree_minutes} min" if duree_minutes == 30 else f"{duree_minutes//60}h",
+            'id': id_actuel
+        })
+
+    # Gestion du POST
+    if request.method == 'POST' and 'creneau' in request.POST:
+        creneau_id = request.POST.get('creneau')
+        type_consultation = request.POST.get('type')
+        if creneau_id and creneau_id.startswith('virtuel_'):
+            try:
+                parts = creneau_id.split('_')
+                if len(parts) >= 5:
+                    date_str = parts[1]
+                    heure_h = int(parts[2])
+                    heure_m = int(parts[3])
+                    duree = int(parts[4])
+                    date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
+                    heure_obj = time(heure_h, heure_m)
+                    # Vérifier une dernière fois que le créneau est disponible
+                    if not Seance.objects.filter(date=date_obj, heure_debut=heure_obj).exclude(pk=seance.pk).exists():
+                        nom_consultation = next((nom for type_id, nom, d in types_consultation if type_id == type_consultation), 'Consultation')
+                        seance.date = date_obj
+                        seance.heure_debut = heure_obj
+                        seance.objet = nom_consultation
+                        seance.save()
+                        messages.success(request, f'Rendez-vous modifié pour le {date_obj.strftime("%d/%m/%Y")} à {heure_obj.strftime("%H:%M")} - {nom_consultation}')
+                        return redirect('calendrier_coach')
+                    else:
+                        messages.error(request, 'Ce créneau a déjà été réservé.')
+                else:
+                    messages.error(request, 'Format de créneau invalide.')
+            except Exception as e:
+                messages.error(request, f'Erreur lors de la modification : {str(e)}')
+        else:
+            messages.error(request, 'Veuillez sélectionner un créneau valide.')
+
+    return render(request, 'rdv_app/seance_update.html', {
+        'seance': seance,
+        'types_consultation': types_consultation,
+        'type_selectionne': type_selectionne,
+        'creneaux_disponibles': creneaux_disponibles,
+        'is_coach': is_coach
+    })
 
 @login_required
 def seance_delete_view(request, pk):
@@ -626,7 +713,20 @@ def messages_coach_view(request):
     if not (request.user.groups.filter(name='coach').exists() or request.user.username.lower() == 'adja'):
         return redirect('dashboard')
     from django.contrib.auth.models import User
-    from .models import Message
+    from .models import Message, ContactMessage
+    # Suppression d'un message de contact externe
+    if request.method == 'POST' and 'delete_contact_id' in request.POST:
+        contact_id = request.POST.get('delete_contact_id')
+        ContactMessage.objects.filter(id=contact_id).delete()
+        return redirect(request.path)
+    # Suppression d'une discussion avec un client
+    if request.method == 'POST' and 'delete_discussion_id' in request.POST:
+        client_id = request.POST.get('delete_discussion_id')
+        Message.objects.filter(
+            (models.Q(sender_id=client_id) & models.Q(recipient=request.user)) |
+            (models.Q(sender=request.user) & models.Q(recipient_id=client_id))
+        ).delete()
+        return redirect(request.path)
     # Liste des clients ayant échangé avec le coach
     clients_ids = Message.objects.filter(recipient=request.user).values_list('sender', flat=True).distinct()
     clients = User.objects.filter(id__in=clients_ids)
@@ -641,7 +741,7 @@ def messages_coach_view(request):
         ).order_by('created_at')
         # Marquer les messages du client comme lus
         mark_messages_as_read(request.user, selected_client)
-        if request.method == 'POST':
+        if request.method == 'POST' and 'delete_contact_id' not in request.POST and 'delete_discussion_id' not in request.POST:
             from .forms import MessageForm
             form = MessageForm(request.POST, request.FILES)
             if form.is_valid():
@@ -655,6 +755,8 @@ def messages_coach_view(request):
     if selected_id and request.method != 'POST':
         from .forms import MessageForm
         form = MessageForm()
+    # Ajout des messages de contact externe
+    contact_messages = ContactMessage.objects.all().order_by('-date')
     is_coach = True
     context = {
         'clients': clients,
@@ -663,6 +765,7 @@ def messages_coach_view(request):
         'form': form,
         'selected_id': selected_id,
         'is_coach': is_coach,
+        'contact_messages': contact_messages,
     }
     context = add_notifications_to_context(context, request.user)
     return render(request, 'rdv_app/messages_coach.html', context)
@@ -711,6 +814,7 @@ def pricing_view(request):
 
 def contact_view(request):
     from django.core.mail import send_mail
+    from .models import ContactMessage
     is_coach = request.user.is_authenticated and (request.user.groups.filter(name='coach').exists() or request.user.username.lower() == 'adja')
     success = False
     error = None
@@ -720,13 +824,16 @@ def contact_view(request):
         message = request.POST.get('message')
         if nom and email and message:
             try:
-                send_mail(
-                    subject=f"Nouveau message de contact de {nom}",
-                    message=f"Nom: {nom}\nEmail: {email}\n\nMessage:\n{message}",
-                    from_email=None,  # Utilise DEFAULT_FROM_EMAIL
-                    recipient_list=['contact@boostcarriere.com'],
-                    fail_silently=False,
-                )
+                # Enregistrement en base
+                ContactMessage.objects.create(nom=nom, email=email, message=message, lu=False, type='contact_externe')
+                # (Optionnel) Envoi email
+                # send_mail(
+                #     subject=f"Nouveau message de contact de {nom}",
+                #     message=f"Nom: {nom}\nEmail: {email}\n\nMessage:\n{message}",
+                #     from_email=None,
+                #     recipient_list=['contact@boostcarriere.com'],
+                #     fail_silently=False,
+                # )
                 success = True
             except Exception as e:
                 error = str(e)
@@ -977,3 +1084,55 @@ def calendrier_coach_view(request):
         'today': today,
         'is_coach': is_coach,
     })
+
+@login_required
+def temoignage_client_view(request):
+    if not request.user.groups.filter(name='client').exists():
+        return redirect('accueil')
+    # On cherche un témoignage existant pour ce client
+    temoignage = Temoinage.objects.filter(user=request.user).first()
+    deja_poste = temoignage is not None
+    success = False
+    # Si le témoignage existe et n'est pas validé, permettre l'édition
+    if temoignage and not temoignage.valide:
+        if request.method == 'POST':
+            form = TemoinageForm(request.POST, instance=temoignage)
+            if form.is_valid():
+                form.save()
+                success = True
+        else:
+            form = TemoinageForm(instance=temoignage)
+        return render(request, 'rdv_app/temoignage_client.html', {'form': form, 'success': success, 'deja_poste': deja_poste, 'modifiable': True, 'temoignage': temoignage})
+    # Si le témoignage existe et est validé, affichage simple, pas d'édition
+    elif temoignage and temoignage.valide:
+        return render(request, 'rdv_app/temoignage_client.html', {'success': False, 'deja_poste': True, 'modifiable': False, 'temoignage': temoignage})
+    # Si pas encore de témoignage, création
+    else:
+        if request.method == 'POST':
+            form = TemoinageForm(request.POST)
+            if form.is_valid():
+                temoignage = form.save(commit=False)
+                temoignage.user = request.user
+                temoignage.valide = False  # Validation admin requise
+                temoignage.save()
+                success = True
+        else:
+            form = TemoinageForm()
+        return render(request, 'rdv_app/temoignage_client.html', {'form': form, 'success': success, 'deja_poste': False, 'modifiable': True, 'temoignage': None})
+
+@login_required
+def temoignages_admin_view(request):
+    # Seuls les coachs peuvent accéder à la validation
+    if not (request.user.groups.filter(name='coach').exists() or request.user.username.lower() == 'adja'):
+        return redirect('dashboard')
+    from .models import Temoinage
+    if request.method == 'POST' and 'valider_id' in request.POST:
+        temoignage_id = request.POST.get('valider_id')
+        Temoinage.objects.filter(id=temoignage_id).update(valide=True)
+        return redirect(request.path)
+    if request.method == 'POST' and 'supprimer_id' in request.POST:
+        temoignage_id = request.POST.get('supprimer_id')
+        Temoinage.objects.filter(id=temoignage_id).delete()
+        return redirect(request.path)
+    temoignages = Temoinage.objects.all().order_by('-date')
+    return render(request, 'rdv_app/temoignages_admin.html', {'temoignages': temoignages, 'is_coach': True})

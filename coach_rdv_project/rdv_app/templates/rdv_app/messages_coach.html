@@ -1,5 +1,32 @@
 {% extends 'rdv_app/base.html' %}
 {% block content %}
+<div class="container my-4">
+  {% if contact_messages and contact_messages.count > 0 %}
+    <div class="mb-4">
+      <h4 class="mb-3" style="color:#1976d2;">Messages de contact externe</h4>
+      <div class="list-group">
+        {% for msg in contact_messages %}
+          <form method="post" style="margin-bottom:0;display:inline;">
+            {% csrf_token %}
+            <div class="list-group-item list-group-item-action flex-column align-items-start mb-2" style="border-radius:12px;box-shadow:0 2px 8px #e3e6ea; position:relative;">
+              <div class="d-flex w-100 justify-content-between align-items-center">
+                <div>
+                  <span class="badge bg-info text-dark me-2">Contact externe</span>
+                  <strong>{{ msg.nom }}</strong> &lt;<a href="https://mail.google.com/mail/?view=cm&to={{ msg.email }}&su=Réponse à votre message Boost Carrière" target="_blank">{{ msg.email }}</a>&gt;
+                  <button type="submit" name="delete_contact_id" value="{{ msg.id }}" class="btn btn-xs btn-link text-danger p-0 ms-2" style="font-size:0.92em;vertical-align:middle;text-decoration:underline;background:none;border:none;box-shadow:none;">Supprimer</button>
+                </div>
+                <small class="text-muted">{{ msg.date|date:"d/m/Y H:i" }}</small>
+              </div>
+              <div class="mt-2" style="white-space:pre-line;">{{ msg.message }}</div>
+            </div>
+          </form>
+        {% empty %}
+          <div class="alert alert-info">Aucun message de contact externe.</div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+</div>
 <style>
   .messenger-coach {
     display: flex;
@@ -289,10 +316,14 @@
   </div>
   <div class="discussion">
     {% if selected_client %}
-      <div class="discussion-header">
-        <span class="avatar">{{ selected_client.first_name|default:selected_client.username|first|upper }}</span>
-        <span>{{ selected_client.first_name }} {{ selected_client.last_name }}</span>
-      </div>
+      <form method="post" style="display:inline;">
+        {% csrf_token %}
+        <div class="messenger-coach discussion-header">
+          <span class="avatar">{{ selected_client.first_name|default:selected_client.username|first|upper }}</span>
+          <span class="fw-bold">{{ selected_client.get_full_name|default:selected_client.username }}</span>
+          <button type="submit" name="delete_discussion_id" value="{{ selected_client.id }}" class="btn btn-xs btn-link text-danger p-0 ms-3" style="font-size:0.92em;vertical-align:middle;text-decoration:underline;background:none;border:none;box-shadow:none;">Supprimer la discussion</button>
+        </div>
+      </form>
       <div class="messages-thread" id="messages-thread">
         {% for msg in messages_list %}
           <div class="msg-row {% if msg.sender == request.user %}right{% else %}left{% endif %}">

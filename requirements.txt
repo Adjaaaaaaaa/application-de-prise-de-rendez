@@ -1,0 +1,13 @@
+Django==5.2.4
+# Pour la gestion des environnements virtuels et variables d'environnement
+python-dotenv>=1.0.0
+# Pour la base de données SQLite (intégré à Python, mais utile si migration vers PostgreSQL)
+psycopg2-binary>=2.9.0  # Décommente si tu utilises PostgreSQL
+# Pour le support des images (Pillow)
+Pillow>=10.0.0
+# Pour les formulaires avancés (optionnel)
+django-crispy-forms>=2.0
+# Pour la gestion des fichiers statiques (optionnel)
+whitenoise>=6.0.0
+# Pour les tests (optionnel)
+pytest-django>=4.0.0 

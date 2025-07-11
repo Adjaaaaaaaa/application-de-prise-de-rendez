@@ -81,3 +81,24 @@ class Indisponibilite(models.Model):
             return f"Indispo {self.date_debut} (jour entier)"
         else:
             return f"Indispo {self.date_debut} {self.heure_debut}-{self.heure_fin}"
+
+class ContactMessage(models.Model):
+    nom = models.CharField(max_length=150)
+    email = models.EmailField()
+    message = models.TextField()
+    date = models.DateTimeField(auto_now_add=True)
+    lu = models.BooleanField(default=False)
+    type = models.CharField(max_length=30, default='contact_externe')
+
+    def __str__(self):
+        return f"Contact de {self.nom} ({self.email}) le {self.date.strftime('%d/%m/%Y %H:%M')}"
+
+class Temoinage(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    texte = models.TextField()
+    date = models.DateTimeField(auto_now_add=True)
+    valide = models.BooleanField(default=False)
+    profession = models.CharField(max_length=100, blank=True)
+
+    def __str__(self):
+        return f"Témoignage de {self.user.username} le {self.date.strftime('%d/%m/%Y')}"

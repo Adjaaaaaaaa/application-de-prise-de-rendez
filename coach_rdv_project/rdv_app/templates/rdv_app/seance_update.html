@@ -4,27 +4,96 @@
 
 {% block content %}
 <h2>Modifier le rendez-vous</h2>
-<form method="post">
-    {% csrf_token %}
-    <div class="row">
-        <div class="col-md-6">
-            <div class="mb-3">
-                <label for="date">Nouvelle date :</label>
-                <input type="date" name="date" id="date" class="form-control" value="{{ seance.date|date:'Y-m-d' }}" required>
+
+<!-- Bouton pour revenir aux rendez-vous -->
+<div class="mb-3">
+    <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Voir mes rendez-vous
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Type de consultation</h5>
+            </div>
+            <div class="card-body">
+                <form method="get" id="type-form">
+                    <div class="row">
+                        {% for type_id, nom, duree in types_consultation %}
+                        <div class="col-md-6 mb-2">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="type" id="type_{{ type_id }}" 
+                                       value="{{ type_id }}" {% if type_id == type_selectionne %}checked{% endif %}>
+                                <label class="form-check-label" for="type_{{ type_id }}">
+                                    <strong>{{ nom }}</strong><br>
+                                    <small class="text-muted">{{ duree }} min</small>
+                                </label>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </form>
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="mb-3">
-                <label for="heure_debut">Nouvelle heure de début :</label>
-                <input type="time" name="heure_debut" id="heure_debut" class="form-control" value="{{ seance.heure_debut|time:'H:i' }}" required>
+
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Créneaux disponibles</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="type" value="{{ type_selectionne }}">
+                    <div class="mb-3">
+                        <label for="creneau" class="form-label">Choisissez un créneau :</label>
+                        <select name="creneau" id="creneau" class="form-select" required>
+                            <option value="">-- Sélectionner un créneau --</option>
+                            {% for creneau in creneaux_disponibles %}
+                                <option value="{{ creneau.id }}" {% if creneau.date == seance.date and creneau.heure_debut == seance.heure_debut %}selected{% endif %}>
+                                    {{ creneau.date|date:'l d/m/Y'|title }} de {{ creneau.heure_debut|time:'H:i' }} à {{ creneau.heure_fin|time:'H:i' }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">Annuler</a>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
-    <div class="mb-3">
-        <label for="objet">Objet du rendez-vous :</label>
-        <input type="text" name="objet" id="objet" class="form-control" value="{{ seance.objet }}" required>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Informations</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Coach :</strong> Adja</p>
+                <p><strong>Types de consultation :</strong></p>
+                <ul class="list-unstyled">
+                    <li>• <strong>Première consultation :</strong> 30 min</li>
+                    <li>• <strong>Coaching individuel :</strong> 2h</li>
+                    <li>• <strong>Suivi motivationnel :</strong> 2h</li>
+                    <li>• <strong>Bilan de compétences :</strong> 2h</li>
+                </ul>
+                <p><strong>Horaires :</strong> 9h-17h (lundi-vendredi)</p>
+                <p><strong>Tarif :</strong> Selon le type de consultation</p>
+            </div>
+        </div>
     </div>
-    <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
-    <a href="{% url 'dashboard' %}" class="btn btn-secondary">Annuler</a>
-</form>
+</div>
+
+<script>
+// Actualiser automatiquement quand le type change
+if (document.getElementById('type-form')) {
+    document.querySelectorAll('input[name="type"]').forEach(function(radio) {
+        radio.addEventListener('change', function() {
+            document.getElementById('type-form').submit();
+        });
+    });
+}
+</script>
 {% endblock %} 
