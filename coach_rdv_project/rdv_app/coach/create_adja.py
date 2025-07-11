@@ -2,12 +2,12 @@
 import os
 import sys
 import django
-
+from django.contrib.auth.models import User
 # Configuration Django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'coach_rdv_project.settings')
 django.setup()
 
-from django.contrib.auth.models import User
+
 
 def create_adja():
     """Crée l'utilisateur Adja s'il n'existe pas"""

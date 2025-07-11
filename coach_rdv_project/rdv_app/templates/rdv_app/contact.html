@@ -7,6 +7,11 @@
     <h2>Contactez-nous</h2>
     <div style="max-width:600px;margin:2rem auto;">
         <p class="lead">Une question, un besoin particulier ? Écrivez-nous !</p>
+        {% if success %}
+          <div class="alert alert-success">Votre message a bien été envoyé. Merci, nous vous répondrons rapidement !</div>
+        {% elif error %}
+          <div class="alert alert-danger">{{ error }}</div>
+        {% endif %}
         <form method="post">
             {% csrf_token %}
             <div class="mb-3">

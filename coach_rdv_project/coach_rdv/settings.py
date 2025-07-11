@@ -103,3 +103,14 @@ LOGOUT_REDIRECT_URL = '/'
 
 # 🛠️ Défaut pour champ auto créé
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# --- Configuration email pour l'envoi de messages de contact ---
+# À personnaliser selon ton fournisseur (Gmail, OVH, etc.)
+# Exemple pour Gmail :
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'ton.email@gmail.com'  # Mets ici l'adresse Gmail du coach
+EMAIL_HOST_PASSWORD = ''  # Mets ici le mot de passe d'application Google
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = 'Boost Carrière <ton.email@gmail.com>'

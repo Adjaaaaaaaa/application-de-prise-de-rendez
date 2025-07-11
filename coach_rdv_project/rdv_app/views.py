@@ -710,8 +710,29 @@ def pricing_view(request):
     return render(request, 'rdv_app/pricing.html', {'is_coach': is_coach})
 
 def contact_view(request):
+    from django.core.mail import send_mail
     is_coach = request.user.is_authenticated and (request.user.groups.filter(name='coach').exists() or request.user.username.lower() == 'adja')
-    return render(request, 'rdv_app/contact.html', {'is_coach': is_coach})
+    success = False
+    error = None
+    if request.method == 'POST':
+        nom = request.POST.get('nom')
+        email = request.POST.get('email')
+        message = request.POST.get('message')
+        if nom and email and message:
+            try:
+                send_mail(
+                    subject=f"Nouveau message de contact de {nom}",
+                    message=f"Nom: {nom}\nEmail: {email}\n\nMessage:\n{message}",
+                    from_email=None,  # Utilise DEFAULT_FROM_EMAIL
+                    recipient_list=['contact@boostcarriere.com'],
+                    fail_silently=False,
+                )
+                success = True
+            except Exception as e:
+                error = str(e)
+        else:
+            error = "Veuillez remplir tous les champs."
+    return render(request, 'rdv_app/contact.html', {'is_coach': is_coach, 'success': success, 'error': error})
 
 def ateliers_view(request):
     ateliers = Atelier.objects.filter(date__gte=date.today()).order_by('date')

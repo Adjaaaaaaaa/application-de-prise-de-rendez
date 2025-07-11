@@ -11,19 +11,21 @@
         <p class="text-muted">Pour prendre un rendez-vous avec le coach, vous devez avoir un compte.</p>
       </div>
       
-      <div class="row g-4">
+      <div class="row g-4 align-items-stretch justify-content-center">
         <!-- Option Connexion -->
-        <div class="col-md-6">
-          <div class="card h-100 border-primary shadow-sm">
-            <div class="card-body text-center p-4">
-              <div class="mb-3">
-                <i class="bi bi-person-check text-primary" style="font-size: 3rem;"></i>
+        <div class="col-12 col-md-6 d-flex">
+          <div class="card h-100 border-primary shadow-sm flex-fill d-flex flex-column justify-content-between">
+            <div class="card-body text-center p-4 d-flex flex-column justify-content-between">
+              <div>
+                <div class="mb-3">
+                  <i class="bi bi-person-check text-primary" style="font-size: 3rem;"></i>
+                </div>
+                <h4 class="card-title mb-3">J'ai déjà un compte</h4>
+                <p class="card-text text-muted mb-4">
+                  Connectez-vous à votre compte existant pour accéder à vos rendez-vous et ateliers.
+                </p>
               </div>
-              <h4 class="card-title mb-3">J'ai déjà un compte</h4>
-              <p class="card-text text-muted mb-4">
-                Connectez-vous à votre compte existant pour accéder à vos rendez-vous et ateliers.
-              </p>
-              <a href="{% url 'login' %}{% if request.GET.next %}?next={{ request.GET.next }}{% endif %}" class="btn btn-success w-100">
+              <a href="{% url 'login' %}{% if request.GET.next %}?next={{ request.GET.next }}{% endif %}" class="btn btn-success w-100 mt-auto">
                 <i class="bi bi-box-arrow-in-right"></i> Se connecter
               </a>
             </div>
@@ -31,17 +33,19 @@
         </div>
         
         <!-- Option Inscription -->
-        <div class="col-md-6">
-          <div class="card h-100 border-success shadow-sm">
-            <div class="card-body text-center p-4">
-              <div class="mb-3">
-                <i class="bi bi-person-plus text-success" style="font-size: 3rem;"></i>
+        <div class="col-12 col-md-6 d-flex">
+          <div class="card h-100 border-success shadow-sm flex-fill d-flex flex-column justify-content-between">
+            <div class="card-body text-center p-4 d-flex flex-column justify-content-between">
+              <div>
+                <div class="mb-3">
+                  <i class="bi bi-person-plus text-success" style="font-size: 3rem;"></i>
+                </div>
+                <h4 class="card-title mb-3">Créer un compte</h4>
+                <p class="card-text text-muted mb-4">
+                  Créez votre compte gratuitement pour commencer à prendre des rendez-vous.
+                </p>
               </div>
-              <h4 class="card-title mb-3">Créer un compte</h4>
-              <p class="card-text text-muted mb-4">
-                Créez votre compte gratuitement pour commencer à prendre des rendez-vous.
-              </p>
-              <a href="{% url 'signup' %}{% if request.GET.next %}?next={{ request.GET.next }}{% endif %}" class="btn btn-success w-100">
+              <a href="{% url 'signup' %}{% if request.GET.next %}?next={{ request.GET.next }}{% endif %}" class="btn btn-success w-100 mt-auto">
                 <i class="bi bi-person-plus"></i> S'inscrire
               </a>
             </div>
