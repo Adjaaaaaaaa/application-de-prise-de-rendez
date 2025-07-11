@@ -83,12 +83,12 @@ application-de-prise-de-rendez/
     ```
 
 6. **Connecter à l’admin** sur http://127.0.0.1:8000/admin/ 
-Aller à la section « Utilisateurs » (Users).
-Créer un nouvel utilisateur (ou modifie un existant).
-Ajouter le au groupe « coach » :
-Dans la fiche utilisateur, trouver le champ « Groups ».
-Ajouter le groupe nommé coach (ou créer-le si besoin).
-Sauvegarder.
+* Aller à la section « Utilisateurs » (Users).
+* Créer un nouvel utilisateur (ou modifie un existant).
+* Ajouter le au groupe « coach » :
+* Dans la fiche utilisateur, trouver le champ « Groups ».
+* Ajouter le groupe nommé coach (ou créer-le si besoin).
+* Sauvegarder.
 L’utilisateur fait maintenant partie des coachs et aura accès à l’espace coach dans l’application.
 
 6. **Lancer le serveur de développement**
