@@ -1,0 +1,23 @@
+{% extends 'rdv_app/base.html' %}
+
+{% block title %}Bienvenue sur Boost Carrière{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="jumbotron text-center">
+    <h1 class="display-4">Bienvenue sur Boost Carrière</h1>
+    {% if not is_coach %}
+    <div class="d-flex justify-content-center align-items-center" style="min-height: 90px;">
+      <p class="lead m-0">Découvrez nos services, nos tarifs, et notre accompagnement pour booster votre carrière et votre épanouissement.</p>
+    </div>
+    {% endif %}
+    <div class="mt-4">
+      <a href="{% url 'about' %}" class="btn btn-outline-primary mx-2">À propos</a>
+      <a href="{% url 'services' %}" class="btn btn-outline-primary mx-2">Services</a>
+      <a href="{% url 'ateliers' %}" class="btn btn-outline-primary mx-2">Ateliers</a>
+      <a href="{% url 'pricing' %}" class="btn btn-outline-primary mx-2">Tarifs</a>
+      <a href="{% url 'contact' %}" class="btn btn-outline-primary mx-2">Contact</a>
+    </div>
+  </div>
+</div>
+{% endblock %} 

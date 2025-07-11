@@ -1,0 +1,56 @@
+{% extends 'rdv_app/base.html' %}
+{% block content %}
+<h2>Mes disponibilités</h2>
+<a href="{% url 'calendrier_coach' %}" class="btn btn-outline-primary mb-3">Voir le calendrier mensuel</a>
+<h4 class="mt-4">Bloquer une indisponibilité</h4>
+<form method="post" class="mb-4 d-flex flex-wrap align-items-end gap-2">
+    {% csrf_token %}
+    {{ indispo_form.type.label_tag }} {{ indispo_form.type }}
+    {{ indispo_form.date_debut.label_tag }} {{ indispo_form.date_debut }}
+    {{ indispo_form.date_fin.label_tag }} {{ indispo_form.date_fin }}
+    <span id="heure-fields">
+      {{ indispo_form.heure_debut.label_tag }} {{ indispo_form.heure_debut }}
+      {{ indispo_form.heure_fin.label_tag }} {{ indispo_form.heure_fin }}
+    </span>
+    {{ indispo_form.motif.label_tag }} {{ indispo_form.motif }}
+    <button type="submit" name="add_indispo" class="btn btn-warning">Bloquer</button>
+</form>
+<script>
+function updateHeureFields() {
+  var type = document.getElementById('id_type').value;
+  var heureFields = document.getElementById('heure-fields');
+  if (type === 'jour') {
+    heureFields.style.display = 'none';
+  } else {
+    heureFields.style.display = '';
+  }
+}
+document.getElementById('id_type').addEventListener('change', updateHeureFields);
+window.addEventListener('DOMContentLoaded', updateHeureFields);
+</script>
+
+<h5>Indisponibilités à venir</h5>
+<table class="table table-bordered">
+    <thead><tr><th>Type</th><th>Début</th><th>Fin</th><th>Heure début</th><th>Heure fin</th><th>Motif</th><th></th></tr></thead>
+    <tbody>
+    {% for ind in indispos %}
+      <tr>
+        <td>{{ ind.get_type_display }}</td>
+        <td>{{ ind.date_debut }}</td>
+        <td>{{ ind.date_fin|default:'-' }}</td>
+        <td>{{ ind.heure_debut|default:'-' }}</td>
+        <td>{{ ind.heure_fin|default:'-' }}</td>
+        <td>{{ ind.motif|default:'-' }}</td>
+        <td>
+          <form method="post" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" name="delete_indispo" value="{{ ind.id }}" class="btn btn-danger btn-sm" onclick="return confirm('Supprimer cette indisponibilité ?');">Supprimer</button>
+          </form>
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="7">Aucune indisponibilité définie.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %} 

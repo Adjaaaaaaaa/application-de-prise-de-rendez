@@ -2,37 +2,146 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8" />
-    <title>{% block title %}CoachRDV{% endblock %}</title>
+    <title>{% block title %}Boost Carrière{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     {% load static %}
     <link rel="stylesheet" href="{% static 'rdv_app/styles.css' %}">
+    <style>
+      html, body {
+        height: 100%;
+        min-height: 100vh;
+      }
+      body {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+      main.container-fluid {
+        flex: 1 0 auto;
+      }
+      footer {
+        flex-shrink: 0;
+      }
+     
+    </style>
 </head>
 <body>
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-  <div class="container">
-    <a class="navbar-brand" href="{% url 'accueil' %}">CoachRDV</a>
-    <div>
-      <ul class="navbar-nav ms-auto">
-        {% if user.is_authenticated %}
-          <li class="nav-item"><a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a></li>
+{% if user.is_authenticated and is_coach %}
+  
+{% endif %}
+<nav class="navbar navbar-expand-lg" style="background:linear-gradient(90deg,#43e97b 0%,#38f9d7 100%);box-shadow:0 2px 12px #b6e2cd;border-radius:0 0 24px 24px;padding-top:0.7em;padding-bottom:0.7em;min-height:56px;">
+  <div class="container-fluid px-4" style="max-width:1400px;">
+    <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'accueil' %}" style="font-family:'Montserrat',Arial,sans-serif;font-weight:700;font-size:1.18em;letter-spacing:1px;padding:0; color:#fff;">
+      <span style="display:inline-block;background:#fff;color:#38b48b;padding:0.18em 1.5em 0.18em 1.5em;border-radius:50px;box-shadow:0 6px 32px #38b48b33, 0 2px 8px #e3f9f1;font-size:1.25em;vertical-align:middle;line-height:1.1;">
+        Boost <span style="font-weight:900;letter-spacing:2px;">Carrière</span>
+      </span>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto" style="align-items:center;gap:0.2em;">
+        {% if is_coach %}
+          <li class="nav-item"><a class="nav-link text-success fw-bold" style="background:rgba(67,233,123,0.08);border-radius:1.2em;padding:0.25em 1em;line-height:1.1;" href="{% url 'dashboard_coach' %}">Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link text-success fw-bold" style="background:rgba(67,233,123,0.08);border-radius:1.2em;padding:0.25em 1em;line-height:1.1;" href="{% url 'ateliers_admin' %}">Ateliers</a></li>
+          <li class="nav-item"><a class="nav-link text-success fw-bold" style="background:rgba(67,233,123,0.08);border-radius:1.2em;padding:0.25em 1em;line-height:1.1;" href="{% url 'calendrier_coach' %}">Agenda</a></li>
           <li class="nav-item">
-            <form method="post" action="{% url 'logout' %}" style="display:inline;">
-              {% csrf_token %}
-              <button type="submit" class="btn btn-link nav-link" style="display:inline; padding:0; border:none; background:none;">Déconnexion</button>
-            </form>
+            <a class="nav-link position-relative text-success fw-bold" style="background:rgba(67,233,123,0.08);border-radius:1.2em;padding:0.25em 1em;line-height:1.1;" href="{% url 'messages_coach' %}">
+              Messages
+              {% if unread_messages > 0 %}
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                  {{ unread_messages }}
+                </span>
+              {% endif %}
+            </a>
           </li>
+          <li class="nav-item">
+            <!-- Déconnexion déplacée dans le menu utilisateur -->
+          </li>
+          <li class="nav-item d-flex align-items-center dropdown ms-4">
+            <button class="btn dropdown-toggle p-0" style="background:none;border:none;box-shadow:none;outline:none;" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+              <span style="display:inline-block;background:#fff;color:#38b48b;padding:0.18em 1.2em 0.18em 1.2em;border-radius:50px;box-shadow:0 4px 18px #38b48b33, 0 2px 8px #e3f9f1;font-size:1.08em;vertical-align:middle;line-height:1.1;font-weight:700;letter-spacing:1px;">
+                {{ user.username }}
+              </span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end mt-2" aria-labelledby="userDropdown">
+              <li><a class="dropdown-item" href="{% url 'profile' %}">Profil</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li>
+                <a class="dropdown-item" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Déconnexion</a>
+                <form id="logout-form" action="{% url 'logout' %}" method="post" style="display:none;">
+                  {% csrf_token %}
+                </form>
+              </li>
+            </ul>
+          </li>
+        {% elif user.is_authenticated %}
+          <li class="nav-item"><a class="nav-link text-white fw-bold" href="{% url 'prise_rdv' %}">Prendre rendez-vous</a></li>
+          <li class="nav-item"><a class="nav-link text-white fw-bold" href="{% url 'mes_ateliers' %}">Mes ateliers</a></li>
+          <li class="nav-item">
+            <a class="nav-link position-relative text-white fw-bold" href="{% url 'messages' %}">
+              Mes messages
+              {% if unread_messages > 0 %}
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                  {{ unread_messages }}
+                </span>
+              {% endif %}
+            </a>
+          </li>
+          <!-- Menu utilisateur (profil + déconnexion) -->
+          <li class="nav-item d-flex align-items-center dropdown ms-4">
+            <button class="btn dropdown-toggle p-0" style="background:none;border:none;box-shadow:none;outline:none;" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+              <span style="display:inline-block;background:#fff;color:#38b48b;padding:0.18em 1.2em 0.18em 1.2em;border-radius:50px;box-shadow:0 4px 18px #38b48b33, 0 2px 8px #e3f9f1;font-size:1.08em;vertical-align:middle;line-height:1.1;font-weight:700;letter-spacing:1px;">
+                {{ user.username }}
+              </span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end mt-2" aria-labelledby="userDropdown">
+              <li><a class="dropdown-item" href="{% url 'profile' %}">Profil</a></li>
+              {% if not is_coach %}
+              <li><a class="dropdown-item" href="{% url 'temoignage_client' %}">Témoignage</a></li>
+              {% endif %}
+              <li><hr class="dropdown-divider"></li>
+              <li>
+                <a class="dropdown-item" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Déconnexion</a>
+                <form id="logout-form" action="{% url 'logout' %}" method="post" style="display:none;">
+                  {% csrf_token %}
+                </form>
+              </li>
+            </ul>
+          </li>
+          <!-- Fin menu utilisateur -->
         {% else %}
-          <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Connexion</a></li>
-          <li class="nav-item"><a class="nav-link" href="{% url 'signup' %}">Inscription</a></li>
+          <li class="nav-item"><a class="nav-link text-white fw-bold" href="{% url 'about' %}">À propos</a></li>
+          <li class="nav-item"><a class="nav-link text-white fw-bold" href="{% url 'services' %}">Services</a></li>
+          <li class="nav-item"><a class="nav-link text-white fw-bold" href="{% url 'pricing' %}">Tarifs</a></li>
+          <li class="nav-item"><a class="nav-link text-white fw-bold" href="{% url 'ateliers' %}">Ateliers</a></li>
+          <li class="nav-item"><a class="nav-link text-white fw-bold" href="{% url 'contact' %}">Contact</a></li>
+          <li class="nav-item"><a class="nav-link text-white fw-bold" href="{% url 'login' %}">Connexion</a></li>
+          <li class="nav-item"><a class="nav-link text-white fw-bold" href="{% url 'signup' %}">Inscription</a></li>
         {% endif %}
       </ul>
     </div>
   </div>
 </nav>
+{% if is_coach %}
+<style>
+  main.container, .container, .section {
+    margin-top: 1.1em !important;
+  }
+  body > .alert-success + nav {
+    margin-bottom: 0.2em !important;
+  }
+</style>
+{% endif %}
 
-<main class="container mt-4">
+
+<main class="container-fluid px-4" style="max-width:1400px;">
   {% block content %}{% endblock %}
 </main>
+
+<footer class="text-center py-3 mt-5" style="background:linear-gradient(90deg,#43e97b 0%,#38f9d7 100%); color:#fff; font-size:1.08em; border-top:none; letter-spacing:1px;">
+  © {{ now|date:'Y' }} Boost Carrière. Tous droits réservés.
+</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

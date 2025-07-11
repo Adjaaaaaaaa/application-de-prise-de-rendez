@@ -2,17 +2,51 @@
 {% block title %}Tableau de bord - Client{% endblock %}
 
 {% block content %}
-<h2>Bienvenue {{ user.first_name }}</h2>
-<p>Voici vos rendez-vous à venir :</p>
-<ul class="list-group">
-    {% for seance in seances %}
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-          {{ seance.date }} à {{ seance.heure_debut }} – {{ seance.objet }}
-          <span>Coach : {{ seance.coach.get_full_name }}</span>
-        </li>
-    {% empty %}
-        <li class="list-group-item">Aucun rendez-vous prévu.</li>
-    {% endfor %}
-</ul>
-<a href="{% url 'prendre_rdv' %}" class="btn btn-success mt-3">Prendre un nouveau rendez-vous</a>
+<div class="row">
+  <div class="col-md-4">
+    <div class="mb-3">
+      <a href="{% url 'prise_rdv' %}" class="btn btn-success w-100">Prendre un rendez-vous</a>
+    </div>
+    <div class="card mb-4">
+      <div class="card-header bg-secondary text-white">Mes rendez-vous passés</div>
+      <ul class="list-group list-group-flush">
+        {% for seance in seances_passees %}
+          <li class="list-group-item">
+            <small>{{ seance.date|date:'d/m/Y' }} à {{ seance.heure_debut|time:'H:i' }}</small><br>
+            <strong>{{ seance.objet }}</strong>
+          </li>
+        {% empty %}
+          <li class="list-group-item text-muted">Aucun rendez-vous passé.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="col-md-8">
+    <div class="mb-3">
+      <h2 class="mb-0">Mes rendez-vous à venir</h2>
+    </div>
+    <div class="card">
+      <ul class="list-group list-group-flush">
+        {% for seance in seances_avenir %}
+          <li class="list-group-item">
+            <div class="row align-items-center">
+              <div class="col-md-8">
+                <small class="text-muted">{{ seance.date|date:'d/m/Y' }} à {{ seance.heure_debut|time:'H:i' }}</small><br>
+                <strong>{{ seance.objet }}</strong>
+              </div>
+              <div class="col-md-4 text-end">
+                <div class="btn-group btn-group-sm" role="group">
+                  <a href="{% url 'seance_update' seance.pk %}" class="btn btn-outline-warning btn-sm">Modifier</a>
+                  <a href="{% url 'seance_delete' seance.pk %}" class="btn btn-outline-danger btn-sm">Annuler</a>
+                </div>
+              </div>
+            </div>
+          </li>
+        {% empty %}
+          <li class="list-group-item text-muted">Aucun rendez-vous à venir.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
 {% endblock %}

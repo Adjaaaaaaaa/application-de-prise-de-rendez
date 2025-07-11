@@ -1,0 +1,44 @@
+{% extends 'rdv_app/base.html' %}
+
+{% block title %}Ateliers à venir{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h2 class="mb-4 text-center">Ateliers à venir</h2>
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    {% for atelier in ateliers %}
+      <div class="col">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body d-flex flex-column">
+            <h5 class="card-title">{{ atelier.titre }}</h5>
+            <p class="card-text small">{{ atelier.description }}</p>
+            <ul class="list-unstyled mb-2">
+              <li><strong>Date :</strong> {{ atelier.date|date:"d/m/Y" }}</li>
+              <li><strong>Durée :</strong> {{ atelier.duree|default:'Non précisée' }}</li>
+              <li><strong>Lieu :</strong> {{ atelier.lieu|default:'Non précisé' }}</li>
+              <li><strong>Tarif :</strong> {{ atelier.tarif }} €</li>
+            </ul>
+            <div class="mt-auto">
+              {% if user.is_authenticated and not is_coach %}
+                {% if atelier.id in inscrits %}
+                  <span class="badge bg-success">Inscrit</span>
+                {% else %}
+                  <form method="post" class="d-inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="atelier_id" value="{{ atelier.id }}">
+                    <button type="submit" class="btn btn-primary w-100">S'inscrire</button>
+                  </form>
+                {% endif %}
+              {% elif not user.is_authenticated %}
+                <a href="{% url 'choix_auth' %}?next={% url 'ateliers' %}" class="btn btn-outline-primary w-100">S'inscrire</a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="col-12"><div class="alert alert-info text-center">Aucun atelier à venir pour le moment.</div></div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %} 

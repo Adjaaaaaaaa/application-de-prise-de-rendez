@@ -1,0 +1,34 @@
+{% extends 'rdv_app/base.html' %}
+
+{% block title %}Contact{% endblock %}
+
+{% block content %}
+<div class="text-center">
+    <h2>Contactez-nous</h2>
+    <div style="max-width:600px;margin:2rem auto;">
+        <p class="lead">Une question, un besoin particulier ? Écrivez-nous !</p>
+        {% if success %}
+          <div class="alert alert-success">Votre message a bien été envoyé. Merci, nous vous répondrons rapidement !</div>
+        {% elif error %}
+          <div class="alert alert-danger">{{ error }}</div>
+        {% endif %}
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <input type="text" name="nom" class="form-control" placeholder="Votre nom" required>
+            </div>
+            <div class="mb-3">
+                <input type="email" name="email" class="form-control" placeholder="Votre email" required>
+            </div>
+            <div class="mb-3">
+                <textarea name="message" class="form-control" rows="4" placeholder="Votre message" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Envoyer</button>
+        </form>
+        <div class="mt-4">
+            <p><strong>Email :</strong> contact@boostcarriere.com</p>
+            <p><strong>Téléphone :</strong> 01 23 45 67 89</p>
+        </div>
+    </div>
+</div>
+{% endblock %} 

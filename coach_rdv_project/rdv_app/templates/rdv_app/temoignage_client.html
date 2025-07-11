@@ -1,0 +1,45 @@
+{% extends 'rdv_app/base.html' %}
+{% block title %}Déposer un témoignage{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-center align-items-center" style="min-height:70vh;">
+  <div class="card shadow p-4" style="max-width: 480px; width:100%;">
+    <h2 class="mb-4 text-center">Déposer un témoignage</h2>
+    {% if success %}
+      <div class="alert alert-success">Merci pour votre témoignage ! Il sera publié après validation.</div>
+    {% elif deja_poste and not modifiable %}
+      <div class="alert alert-info">Votre témoignage a été validé et publié. Merci pour votre retour !</div>
+      <div class="mt-4">
+        <label class="form-label">Votre témoignage :</label>
+        <div class="border rounded p-3 bg-light">{{ temoignage.texte }}</div>
+      </div>
+    {% elif deja_poste and modifiable %}
+      <div class="alert alert-warning">Votre témoignage n'a pas encore été validé. Vous pouvez le modifier ci-dessous.</div>
+      <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+          {{ form.profession.label_tag }}
+          {{ form.profession }}
+        </div>
+        <div class="mb-3">
+          {{ form.texte.label_tag }}
+          {{ form.texte }}
+        </div>
+        <button type="submit" class="btn btn-success w-100">Enregistrer les modifications</button>
+      </form>
+    {% else %}
+      <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+          {{ form.profession.label_tag }}
+          {{ form.profession }}
+        </div>
+        <div class="mb-3">
+          {{ form.texte.label_tag }}
+          {{ form.texte }}
+        </div>
+        <button type="submit" class="btn btn-success w-100">Envoyer mon témoignage</button>
+      </form>
+    {% endif %}
+  </div>
+</div>
+{% endblock %} 

@@ -1,31 +1,77 @@
 {% extends 'rdv_app/base.html' %}
 
-{% block title %}Bienvenue sur CoachRDV{% endblock %}
+{% block title %}Bienvenue sur Boost Carrière{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-  <div class="jumbotron text-center">
-    <h1 class="display-4">Bienvenue sur CoachRDV</h1>
-    <p class="lead">Prenez rendez-vous facilement avec le coach qui vous convient.</p>
-    <a href="{% url 'signup' %}" class="btn btn-primary btn-lg">Créer un compte</a>
-    <a href="{% url 'login' %}" class="btn btn-outline-primary btn-lg ml-2">Se connecter</a>
-  </div>
-
-  <h2 class="mt-5">Nos coachs disponibles</h2>
-  <div class="row">
-    {% for coach in coachs %}
-    <div class="col-md-4">
-      <div class="card mb-4 shadow-sm">
-        <div class="card-body">
-          <h5 class="card-title">{{ coach.get_full_name }}</h5>
-          <p class="card-text">Email : {{ coach.email }}</p>
-          <a href="{% url 'prendre_rdv' %}?coach={{ coach.id }}" class="btn btn-success">Prendre rendez-vous</a>
+<div class="container mt-4">
+  <div class="jumbotron text-center mb-3 d-flex flex-column justify-content-center align-items-center" style="min-height: 180px;">
+    <h1 class="display-4 mb-1">Bienvenue sur Boost Carrière</h1>
+    <div class="d-flex justify-content-center align-items-center" style="min-height: 40px;">
+      <p class="lead m-0">Découvrez nos services pour booster votre carrière et votre épanouissement.</p>
+    </div>
+    <div class="mt-3">
+      <a href="{% url 'choix_auth' %}?next={% url 'prise_rdv' %}" class="btn btn-success btn-lg">Prendre un rendez-vous</a>
+    </div>
+    <!-- Section Témoignages Clients -->
+    <div class="mt-4 mb-4" id="temoignages">
+      <h3 class="text-center mb-3" style="color:#38b48b;font-weight:700;">Ils nous ont fait confiance</h3>
+      <div id="carouselTemoignages" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="3500" style="max-width:1100px;margin:0 auto;position:relative;background:linear-gradient(120deg,#f6fff8 0%,#e3f9f1 100%);border-radius:24px;box-shadow:0 8px 32px 0 rgba(56,180,139,0.13), 0 4px 24px 0 rgba(56,180,139,0.10);padding:2.5em 0;">
+        <div class="carousel-inner">
+          {% with temoignages|length as total_temoins %}
+          {% for t in temoignages_display %}
+            {% if forloop.counter0|divisibleby:3 %}
+              <div class="carousel-item {% if forloop.counter0 == 0 %}active{% endif %}">
+                <div class="row justify-content-center g-4">
+            {% endif %}
+            <div class="col-12 col-md-4 d-flex align-items-stretch">
+              <div class="card shadow-sm p-4 mb-4 w-100" style="border-radius:18px;background:#fff;min-width:260px;max-width:370px;margin:0 auto;">
+                <div class="mb-2 text-center">
+                  <span class="avatar bg-success text-white rounded-circle d-inline-flex justify-content-center align-items-center" style="width:54px;height:54px;font-size:1.5em;font-weight:700;">{{ t.user.username|first|upper }}</span>
+                </div>
+                <div class="mb-2 text-center" style="font-size:1.08em;line-height:1.7;white-space:pre-line;color:#226c3a;font-weight:500;">{{ t.texte|linebreaksbr }}</div>
+                <div class="text-center mt-2">
+                  <strong style="font-size:1.01em;">{{ t.user.username }}</strong><br>
+                  <span class="text-muted" style="font-size:0.97em;">{% if t.profession %}{{ t.profession }}{% else %}Client vérifié{% endif %}</span>
+                </div>
+                <div class="text-end text-muted mt-2" style="font-size:0.91em;">{{ t.date|date:"d/m/Y" }}</div>
+              </div>
+            </div>
+            {% if forloop.counter|divisibleby:3 or forloop.last %}
+                </div>
+              </div>
+            {% endif %}
+          {% endfor %}
+          {% endwith %}
         </div>
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          var carousel = document.getElementById('carouselTemoignages');
+          if (carousel) {
+            var bsCarousel = new bootstrap.Carousel(carousel, {
+              interval: 3500,
+              ride: 'carousel',
+              pause: false,
+              wrap: true
+            });
+          }
+        });
+        </script>
+        <style>
+          #temoignages .carousel-inner {
+            min-height: 320px;
+          }
+          #temoignages .card {
+            border: none;
+            box-shadow: 0 2px 12px #ececec;
+            background: #fff;
+            margin-bottom: 0;
+          }
+          #temoignages .avatar {
+            box-shadow: 0 2px 8px #e3e6ea;
+          }
+        </style>
       </div>
     </div>
-    {% empty %}
-      <p>Aucun coach disponible pour le moment.</p>
-    {% endfor %}
   </div>
 </div>
 {% endblock %}

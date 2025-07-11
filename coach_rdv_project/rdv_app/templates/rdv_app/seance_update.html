@@ -1,9 +1,9 @@
 {% extends 'rdv_app/base.html' %}
 
-{% block title %}Prendre un rendez-vous{% endblock %}
+{% block title %}Modifier le rendez-vous{% endblock %}
 
 {% block content %}
-<h2>Prendre un rendez-vous avec le coach</h2>
+<h2>Modifier le rendez-vous</h2>
 
 <!-- Bouton pour revenir aux rendez-vous -->
 <div class="mb-3">
@@ -14,7 +14,6 @@
 
 <div class="row">
     <div class="col-md-8">
-        <!-- Sélection du type de consultation -->
         <div class="card mb-4">
             <div class="card-header">
                 <h5 class="mb-0">Type de consultation</h5>
@@ -39,8 +38,6 @@
             </div>
         </div>
 
-        <!-- Sélection du créneau -->
-        {% if creneaux_disponibles %}
         <div class="card">
             <div class="card-header">
                 <h5 class="mb-0">Créneaux disponibles</h5>
@@ -48,37 +45,26 @@
             <div class="card-body">
                 <form method="post">
                     {% csrf_token %}
-                    <input type="hidden" name="type_consultation" value="{{ type_selectionne }}">
+                    <input type="hidden" name="type" value="{{ type_selectionne }}">
                     <div class="mb-3">
                         <label for="creneau" class="form-label">Choisissez un créneau :</label>
                         <select name="creneau" id="creneau" class="form-select" required>
                             <option value="">-- Sélectionner un créneau --</option>
                             {% for creneau in creneaux_disponibles %}
-                                <option value="{{ creneau.id }}">
+                                <option value="{{ creneau.id }}" {% if creneau.date == seance.date and creneau.heure_debut == seance.heure_debut %}selected{% endif %}>
                                     {{ creneau.date|date:'l d/m/Y'|title }} de {{ creneau.heure_debut|time:'H:i' }} à {{ creneau.heure_fin|time:'H:i' }}
                                 </option>
                             {% endfor %}
                         </select>
                     </div>
                     <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">Réserver ce créneau</button>
+                        <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
                         <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">Annuler</a>
                     </div>
                 </form>
             </div>
         </div>
-        {% else %}
-        <div class="alert alert-warning">
-            <h5>Aucun créneau disponible</h5>
-            <p>Aucun créneau n'est disponible pour ce type de consultation.</p>
-            <p>Essayez de changer le type de consultation ou réessayez plus tard.</p>
-            <div class="mt-3">
-                <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">Retour à mes rendez-vous</a>
-            </div>
-        </div>
-        {% endif %}
     </div>
-    
     <div class="col-md-4">
         <div class="card">
             <div class="card-header">
@@ -102,10 +88,12 @@
 
 <script>
 // Actualiser automatiquement quand le type change
-document.querySelectorAll('input[name="type"]').forEach(function(radio) {
-    radio.addEventListener('change', function() {
-        document.getElementById('type-form').submit();
+if (document.getElementById('type-form')) {
+    document.querySelectorAll('input[name="type"]').forEach(function(radio) {
+        radio.addEventListener('change', function() {
+            document.getElementById('type-form').submit();
+        });
     });
-});
+}
 </script>
-{% endblock %}
+{% endblock %} 

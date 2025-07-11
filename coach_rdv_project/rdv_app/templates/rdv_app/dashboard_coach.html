@@ -1,30 +1,162 @@
 {% extends 'rdv_app/base.html' %}
-{% block title %}Tableau de bord - Coach{% endblock %}
+
+{% block title %}Dashboard Coach{% endblock %}
 
 {% block content %}
-<h2>Tableau de bord du coach</h2>
-<p>Rendez-vous à venir :</p>
+<div class="container" style="max-width:900px;">
+  
+  <!-- Statistiques de base -->
+  <div class="row mb-4">
+    <div class="col-md-4">
+      <div class="card text-center shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Ateliers</h5>
+          <p class="display-6">{{ nb_ateliers }}</p>
+          <a href="{% url 'ateliers_admin' %}" class="btn btn-outline-primary w-100">Gérer les ateliers</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card text-center shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Clients</h5>
+          <p class="display-6">{{ nb_clients }}</p>
+          <a href="{% url 'clients_coach' %}" class="btn btn-outline-primary w-100">Voir les clients</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card text-center shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Témoignages</h5>
+          <p class="display-6">{{ nb_temoignages }}</p>
+          <a href="{% url 'temoignages_admin' %}" class="btn btn-outline-primary w-100">Voir les témoignages</a>
+        </div>
+      </div>
+    </div>
+  </div>
 
-<table class="table table-striped">
-  <thead>
-    <tr>
-      <th>Date</th>
-      <th>Heure</th>
-      <th>Client</th>
-      <th>Objet</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for seance in seances %}
-    <tr>
-      <td>{{ seance.date }}</td>
-      <td>{{ seance.heure_debut }}</td>
-      <td>{{ seance.client.get_full_name }}</td>
-      <td>{{ seance.objet }}</td>
-    </tr>
-    {% empty %}
-    <tr><td colspan="4">Aucun rendez-vous.</td></tr>
-    {% endfor %}
-  </tbody>
-</table>
+  <!-- Section des gains par mois -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div class="card-header bg-success text-white">
+          <h4 class="mb-0">
+            <i class="bi bi-graph-up"></i> Gains du mois de {{ current_month|date:"F Y" }}
+          </h4>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <!-- Total des gains -->
+            <div class="col-md-6 text-center">
+              <div class="border-end">
+                <h3 class="text-success mb-2">{{ gains_total_mois }}€</h3>
+                <p class="text-muted mb-1">Total des gains</p>
+                {% if evolution_pct != 0 %}
+                  <span class="badge {% if evolution_pct > 0 %}bg-success{% else %}bg-danger{% endif %}">
+                    {% if evolution_pct > 0 %}+{% endif %}{{ evolution_pct|floatformat:1 }}% vs mois précédent
+                  </span>
+                {% endif %}
+              </div>
+            </div>
+            <!-- Gains des ateliers -->
+            <div class="col-md-6 text-center">
+              <h4 class="text-info mb-2">{{ gains_ateliers_mois }}€</h4>
+              <p class="text-muted mb-1">Ateliers ({{ nb_ateliers_mois }})</p>
+              <small class="text-muted">
+                {% if nb_participants_mois > 0 %}
+                  {{ nb_participants_mois }} participants
+                {% endif %}
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Détail des tarifs -->
+  <div class="row">
+    <div class="col-md-6">
+      <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">
+            <i class="bi bi-calendar-check"></i> Tarifs Rendez-vous
+          </h5>
+        </div>
+        <div class="card-body">
+          <ul class="list-unstyled mb-0">
+            <li class="d-flex justify-content-between mb-2">
+              <span>Première consultation</span>
+              <span class="fw-bold">49€</span>
+            </li>
+            <li class="d-flex justify-content-between mb-2">
+              <span>Coaching individuel</span>
+              <span class="fw-bold">49€ / heure</span>
+            </li>
+            <li class="d-flex justify-content-between mb-2">
+              <span>Suivi motivationnel</span>
+              <span class="fw-bold">49€ / heure</span>
+            </li>
+            <li class="d-flex justify-content-between">
+              <span>Bilan de compétences</span>
+              <span class="fw-bold">120€</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-6">
+      <div class="card shadow-sm">
+        <div class="card-header bg-info text-white">
+          <h5 class="mb-0">
+            <i class="bi bi-people"></i> Statistiques du mois
+          </h5>
+        </div>
+        <div class="card-body">
+          <ul class="list-unstyled mb-0">
+            <li class="d-flex justify-content-between mb-2">
+              <span>Rendez-vous réalisés</span>
+              <span class="fw-bold">{{ nb_rdv_mois }}</span>
+            </li>
+            <li class="d-flex justify-content-between mb-2">
+              <span>Ateliers organisés</span>
+              <span class="fw-bold">{{ nb_ateliers_mois }}</span>
+            </li>
+            <li class="d-flex justify-content-between mb-2">
+              <span>Participants ateliers</span>
+              <span class="fw-bold">{{ nb_participants_mois }}</span>
+            </li>
+            <li class="d-flex justify-content-between">
+              <span>Heures travaillées</span>
+              <span class="fw-bold">
+                {{ heures_travaillees_mois }}h{% if minutes_restantes %}{{ minutes_restantes }}{% endif %}
+              </span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.card {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+}
+
+.border-end {
+  border-right: 1px solid #dee2e6;
+}
+
+.bi {
+  margin-right: 5px;
+}
+</style>
 {% endblock %}

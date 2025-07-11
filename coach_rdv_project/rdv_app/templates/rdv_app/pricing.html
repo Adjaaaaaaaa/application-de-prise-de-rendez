@@ -1,0 +1,39 @@
+{% extends 'rdv_app/base.html' %}
+
+{% block title %}Tarifs{% endblock %}
+
+{% block content %}
+<div class="text-center">
+    <h2>Nos Tarifs</h2>
+    <div style="max-width:1100px;margin:2rem auto;">
+      <div class="row row-cols-1 row-cols-md-3 g-4 justify-content-center">
+        <div class="col mb-4">
+          <div class="p-4 shadow rounded bg-white h-100" style="font-size:0.98em;">
+            <h4>Coaching individuel</h4>
+            <p class="display-6">49€ / heure</p>
+            <p>Séance personnalisée d'1h avec un coach certifié.</p>
+          </div>
+        </div>
+        <div class="col mb-4">
+          <div class="p-4 shadow rounded bg-white h-100" style="font-size:0.98em;">
+            <h4>Suivi motivationnel</h4>
+            <p class="display-6">49€ / heure</p>
+            <p>Un accompagnement régulier pour garder le cap et rester motivé tout au long de votre parcours.</p>
+          </div>
+        </div>
+        <div class="col mb-4">
+          <div class="p-4 shadow rounded bg-white h-100" style="font-size:0.98em;">
+            <h4>Bilan de compétences</h4>
+            <p class="display-6">120€</p>
+            <p>Bilan complet avec restitution et plan d'action personnalisé.</p>
+          </div>
+        </div>
+      </div>
+      <div class="row justify-content-center mt-4">
+        <div class="col-12 col-md-8">
+          <p class="text-center" style="font-size:1.1em;">Pour toute demande spécifique ou devis sur-mesure, <a href="{% url 'contact' %}">contactez-nous</a> !</p>
+        </div>
+      </div>
+    </div>
+</div>
+{% endblock %} 

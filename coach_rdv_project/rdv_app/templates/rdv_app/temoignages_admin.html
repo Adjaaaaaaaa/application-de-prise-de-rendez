@@ -1,0 +1,32 @@
+{% extends 'rdv_app/base.html' %}
+{% block title %}Validation des témoignages{% endblock %}
+{% block content %}
+<div class="container my-5" style="max-width:800px;">
+  <h2 class="mb-4 text-center">Témoignages clients à valider</h2>
+  {% if temoignages %}
+    <div class="list-group">
+      {% for t in temoignages %}
+        <form method="post" class="mb-2">
+          {% csrf_token %}
+          <div class="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-md-center" style="box-shadow:0 2px 8px #e3f9f1;">
+            <div>
+              <strong>{{ t.user.get_full_name|default:t.user.username }}</strong>
+              <span class="text-muted ms-2" style="font-size:0.95em;">{{ t.date|date:"d/m/Y H:i" }}</span>
+              {% if t.valide %}<span class="badge bg-success ms-2">Publié</span>{% else %}<span class="badge bg-warning text-dark ms-2">En attente</span>{% endif %}
+              <div class="mt-2" style="white-space:pre-line;max-width:600px;">{{ t.texte }}</div>
+            </div>
+            <div class="d-flex flex-column gap-2 ms-md-3 mt-3 mt-md-0">
+              {% if not t.valide %}
+                <button type="submit" name="valider_id" value="{{ t.id }}" class="btn btn-success btn-xs py-0 px-2" style="font-size:0.85rem;min-width:70px;">Valider</button>
+              {% endif %}
+              <button type="submit" name="supprimer_id" value="{{ t.id }}" class="btn btn-outline-danger btn-xs py-0 px-2" style="font-size:0.85rem;min-width:70px;">Supprimer</button>
+            </div>
+          </div>
+        </form>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="alert alert-info text-center">Aucun témoignage pour le moment.</div>
+  {% endif %}
+</div>
+{% endblock %} 
