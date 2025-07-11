@@ -2,6 +2,8 @@
 
 Application Django permettant à un coach en développement personnel de gérer ses séances avec ses clients. Les utilisateurs peuvent s’inscrire, se connecter et réserver un rendez-vous via une interface web moderne et intuitive.
 
+Ce projet a été réalisé dans le cadre d'une formation de développeur en intelligence artificielle. 
+
 ---
 
 ## 🚀 Fonctionnalités principales
@@ -56,7 +58,7 @@ application-de-prise-de-rendez/
 
 1. **Cloner le dépôt**
     ```bash
-    git clone <url-du-repo>
+    git clone <https://github.com/Adjaaaaaaaa/application-de-prise-de-rendez.git>
     cd application-de-prise-de-rendez
     ```
 2. **Créer un environnement virtuel** (recommandé)
@@ -79,6 +81,16 @@ application-de-prise-de-rendez/
     ```bash
     python manage.py createsuperuser
     ```
+
+6. **Connecter à l’admin** sur http://127.0.0.1:8000/admin/ 
+Aller à la section « Utilisateurs » (Users).
+Créer un nouvel utilisateur (ou modifie un existant).
+Ajouter le au groupe « coach » :
+Dans la fiche utilisateur, trouver le champ « Groups ».
+Ajouter le groupe nommé coach (ou créer-le si besoin).
+Sauvegarder.
+L’utilisateur fait maintenant partie des coachs et aura accès à l’espace coach dans l’application.
+
 6. **Lancer le serveur de développement**
     ```bash
     python manage.py runserver
@@ -140,19 +152,3 @@ Voir le fichier `requirements.txt` pour la liste complète.
 
 ---
 
-## 🧪 Tests manuels
-
-- Créer un superutilisateur
-- S’inscrire avec un compte client
-- Se connecter et tester la prise/modification de RDV
-- Se connecter en tant que coach et voir tous les rendez-vous, messages, ateliers
-
----
-
-## 📄 Licence
-
-Ce projet est libre pour un usage personnel, éducatif ou professionnel.
-
----
-
-**Contact** : Pour toute question ou suggestion, utilisez le formulaire de contact intégré à l’application.
